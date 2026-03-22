@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KARACA — Servis Detay</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box;}
+        :root{
+            --blue:#1e40af;--blue2:#3b82f6;--red:#dc2626;--green:#059669;--green2:#10b981;
+            --bg:#0f172a;--surface:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.08);
+        }
+        body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:white;min-height:100vh;padding-bottom:80px;}
+
+        /* Top */
+        .topbar{background:rgba(255,255,255,0.04);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+        .back-btn{background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-family:'Inter',sans-serif;}
+        .back-btn svg{width:18px;height:18px;}
+        .page-title{font-size:14px;font-weight:800;}
+        .servis-badge{background:rgba(37,99,235,0.2);border:1px solid rgba(37,99,235,0.3);color:#93c5fd;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;}
+
+        .info-strip{background:rgba(37,99,235,0.08);border-bottom:1px solid rgba(37,99,235,0.12);padding:7px 16px;display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.4);}
+        .info-strip strong{color:rgba(255,255,255,0.75);}
+
+        /* Content */
+        .content{padding:12px 16px;}
+
+        /* Cards */
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px;}
+        .card-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+        .card-head-ico{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;}
+        .card-head-ico svg{width:13px;height:13px;color:white;}
+        .ico-blue{background:linear-gradient(135deg,#1e40af,#3b82f6);}
+        .ico-red{background:linear-gradient(135deg,#dc2626,#ef4444);}
+        .ico-green{background:linear-gradient(135deg,#059669,#10b981);}
+        .ico-amber{background:linear-gradient(135deg,#b45309,#f59e0b);}
+        .ico-purple{background:linear-gradient(135deg,#7c3aed,#8b5cf6);}
+        .card-head-title{font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.5px;}
+        .card-body{padding:12px 14px;}
+
+        /* Info rows */
+        .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+        .info-item{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;}
+        .info-item.full{grid-column:1/-1;}
+        .info-lbl{font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:2px;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+        .info-val{font-size:12px;font-weight:600;line-height:1.4;}
+        .info-val.red{color:#fca5a5;}
+
+        /* Durum */
+        .durum-row{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+        .durum-lbl{font-size:13px;font-weight:600;color:rgba(255,255,255,0.7);}
+        .durum-val{
+            font-size:11px;font-weight:700;padding:6px 12px;
+            background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.25);
+            color:#fca5a5;border-radius:20px;cursor:pointer;transition:all 0.2s;
+        }
+        .durum-val:hover{background:rgba(220,38,38,0.25);}
+
+        /* Table */
+        .tbl{width:100%;border-collapse:collapse;font-size:11px;}
+        .tbl th{padding:8px 8px;text-align:left;font-size:9px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.3px;border-bottom:1px solid var(--border);}
+        .tbl td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:top;color:rgba(255,255,255,0.75);}
+        .tbl tr:last-child td{border-bottom:none;}
+        .tbl tr:hover td{background:rgba(255,255,255,0.02);}
+        .tbl-green{color:#6ee7b7;font-weight:600;}
+        .empty-row{text-align:center;padding:20px!important;color:rgba(255,255,255,0.25)!important;}
+
+        /* Para total */
+        .para-total{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-top:1px solid var(--border);font-size:13px;}
+        .para-total-val{font-size:16px;font-weight:800;color:#60a5fa;}
+        .btn-ekle{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+
+        /* Form */
+        .fg{margin-bottom:10px;}
+        .fg:last-child{margin-bottom:0;}
+        .fg label{display:block;font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:4px;font-weight:500;}
+        .fg input,.fg textarea{width:100%;padding:9px 12px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:white;font-size:13px;font-family:'Inter',sans-serif;transition:all 0.2s;}
+        .fg input::placeholder,.fg textarea::placeholder{color:rgba(255,255,255,0.3);}
+        .fg input:focus,.fg textarea:focus{outline:none;border-color:var(--blue2);background:rgba(255,255,255,0.1);}
+        .fg textarea{resize:none;min-height:60px;}
+
+        /* İmza */
+        .imza-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+        .imza-box{border:2px dashed rgba(255,255,255,0.15);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:all 0.2s;min-height:80px;display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,0.03);}
+        .imza-box:hover{border-color:var(--blue2);background:rgba(37,99,235,0.08);}
+        .imza-box.signed{border-style:solid;border-color:var(--green2);background:rgba(16,185,129,0.07);}
+        .imza-lbl{font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;}
+        .imza-hint{font-size:11px;color:rgba(255,255,255,0.3);}
+        .imza-img{max-width:100%;max-height:55px;filter:invert(1);}
+
+        /* Bottom */
+        .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:#1e293b;border-top:1px solid var(--border);padding:8px 12px;display:grid;grid-template-columns:repeat(6,1fr);gap:5px;z-index:50;}
+        .btn{padding:8px 2px;border:none;border-radius:8px;font-size:9px;font-weight:700;cursor:pointer;text-align:center;line-height:1.3;transition:all 0.15s;font-family:'Inter',sans-serif;}
+        .btn:active{transform:scale(0.95);}
+        .btn-dk{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.1);}
+        .btn-wa{background:rgba(21,128,61,0.2);color:#86efac;border:1px solid rgba(21,128,61,0.3);}
+        .btn-blue{background:rgba(37,99,235,0.2);color:#93c5fd;border:1px solid rgba(37,99,235,0.3);}
+        .btn-save{background:linear-gradient(135deg,var(--green),var(--green2));color:white;}
+
+        /* Popups */
+        .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:100;align-items:flex-end;justify-content:center;}
+        .overlay.show{display:flex;}
+        .sheet{background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:82vh;display:flex;flex-direction:column;animation:slideUp 0.25s ease;}
+        @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+        .sheet-head{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;}
+        .sheet-ico{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:flex;align-items:center;justify-content:center;}
+        .sheet-ico svg{width:16px;height:16px;color:white;}
+        .sheet-title{font-size:15px;font-weight:700;}
+        .sheet-body{flex:1;overflow-y:auto;}
+        .sheet-item{padding:13px 16px;font-size:13px;color:rgba(255,255,255,0.8);border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;}
+        .sheet-item:hover,.sheet-item.sel{background:rgba(37,99,235,0.15);color:#93c5fd;}
+        .sheet-item.sel::after{content:' ✓';color:#22c55e;}
+        .sheet-foot{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.08);}
+        .sheet-close{width:100%;padding:12px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+        .form-body{padding:14px 16px;}
+        .form-fg{margin-bottom:12px;}
+        .form-fg label{display:block;font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:4px;}
+        .form-fg select,.form-fg input{width:100%;padding:10px 12px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:white;font-size:13px;font-family:'Inter',sans-serif;}
+        .form-fg select option{background:#1e293b;}
+        .form-fg input::placeholder{color:rgba(255,255,255,0.3);}
+        .add-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;font-family:'Inter',sans-serif;}
+
+        /* Canvas */
+        .canvas-wrap{background:white;border-radius:8px;margin-bottom:10px;overflow:hidden;}
+        #imzaCanvas{width:100%;height:220px;border-radius:8px;cursor:crosshair;touch-action:none;display:block;background:#f8fafc;}
+        .canvas-btns{display:flex;gap:8px;}
+        .cbtn{flex:1;padding:11px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+        .cbtn-gray{background:rgba(255,255,255,0.1);color:white;}
+        .cbtn-blue{background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;}
+
+        /* PDF Preview Modal */
+        .pdf-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:200;align-items:flex-start;justify-content:center;padding:12px;overflow-y:auto;}
+        .pdf-modal-overlay.show{display:flex;}
+        .pdf-modal{background:white;border-radius:14px;width:100%;max-width:640px;margin:auto;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.5);animation:fadeScale 0.2s ease;}
+        @keyframes fadeScale{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
+        .pdf-toolbar{background:#1e40af;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+        .pdf-toolbar h3{color:white;font-size:14px;font-weight:700;}
+        .pdf-actions{display:flex;gap:8px;}
+        .pdf-btn{padding:7px 14px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+        .pdf-btn:active{transform:scale(0.96);}
+        .pdf-btn-print{background:white;color:#1e40af;}
+        .pdf-btn-dl{background:#22c55e;color:white;}
+        .pdf-btn-close{background:rgba(255,255,255,0.15);color:white;}
+        .pdf-content{padding:14px;background:#e2e8f0;}
+        .pdf-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:12px;color:#64748b;font-size:13px;}
+        .pdf-spinner{width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#1e40af;border-radius:50%;animation:spin 0.8s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        #pdfFrame{background:white;border-radius:6px;box-shadow:0 2px 12px rgba(0,0,0,0.15);overflow:hidden;display:none;}
+
+        /* Toast */
+        .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);background:#059669;color:white;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all 0.3s;z-index:500;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+        /* Section note */
+        .note{text-align:center;font-size:10px;color:rgba(255,255,255,0.25);padding:8px 0 2px;}
+
+        /* ── PDF Template (hidden) ── */
+        #pdfTemplate{position:absolute;left:-9999px;top:-9999px;width:794px;padding:22px 28px;font-family:'Segoe UI',Arial,sans-serif;font-size:10px;background:white;box-sizing:border-box;color:#1f2937;}
+
+        /* Print */
+        @media print{
+            *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+            body>*:not(#printView){display:none!important;}
+            #printView{display:block!important;position:fixed;inset:0;z-index:9999;background:white;}
+            @page{size:A4;margin:0;}
+        }
+        #printView{display:none;}
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <button class="back-btn" onclick="window.location.href='teknisyen-yonlendir.html'">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Liste
+    </button>
+    <div class="page-title">SERVİS DETAY</div>
+    <div class="servis-badge">#<span id="hdrNo">-</span></div>
+</div>
+<div class="info-strip">
+    <span>📅 Kayıt: <strong id="hdrTarih">-</strong></span>
+    <span>Yetki: <strong>FMS-42534</strong></span>
+    <span id="hdrSaat">--:--</span>
+</div>
+
+<div class="content">
+
+    <!-- Müşteri & Cihaz -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div class="card">
+            <div class="card-head"><div class="card-head-ico ico-blue"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div><div class="card-head-title">Müşteri</div></div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item full"><div class="info-lbl">Ad Soyad</div><div class="info-val" id="mAd">-</div></div>
+                    <div class="info-item full"><div class="info-lbl">Telefon</div><div class="info-val" id="mTel">-</div></div>
+                    <div class="info-item full"><div class="info-lbl">Adres</div><div class="info-val" id="mAdres">-</div></div>
+                    <div class="info-item full"><div class="info-lbl">Müsait Zaman</div><div class="info-val" id="mZaman">-</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-head"><div class="card-head-ico ico-red"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/></svg></div><div class="card-head-title">Cihaz</div></div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item"><div class="info-lbl">Marka</div><div class="info-val" id="cMarka">-</div></div>
+                    <div class="info-item"><div class="info-lbl">Tür</div><div class="info-val" id="cTur">-</div></div>
+                    <div class="info-item full"><div class="info-lbl">Model</div><div class="info-val" id="cModel">-</div></div>
+                    <div class="info-item full" id="seriNoRow" style="display:none"><div class="info-lbl">Seri No</div><div class="info-val" id="cSeriNo">-</div></div>
+                    <div class="info-item full"><div class="info-lbl">Arıza</div><div class="info-val red" id="cAriza">-</div></div>
+                    <div class="info-item full" id="garantiRow" style="display:none"><div class="info-lbl">Garanti Bitiş</div><div class="info-val" id="cGaranti">-</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Durum -->
+    <div class="card" style="margin-bottom:10px;">
+        <div class="card-body">
+            <div class="durum-row">
+                <span class="durum-lbl">Servis Durumu</span>
+                <span class="durum-val" id="durumVal" onclick="openDurumSheet()">— Seçiniz —</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Servis Geçmişi -->
+    <div class="card" style="margin-bottom:10px;">
+        <div class="card-head"><div class="card-head-ico ico-purple"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div class="card-head-title">Servis Geçmişi</div></div>
+        <table class="tbl">
+            <thead><tr><th>Tarih</th><th>Yapan</th><th>Açıklama</th></tr></thead>
+            <tbody id="islemTbody"></tbody>
+        </table>
+    </div>
+
+    <!-- Para Hareketleri -->
+    <div class="card" style="margin-bottom:10px;">
+        <div class="card-head">
+            <div class="card-head-ico ico-green"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+            <div class="card-head-title" style="flex:1">Para Hareketleri</div>
+            <button class="btn-ekle" onclick="openParaSheet()">+ Ekle</button>
+        </div>
+        <div id="paraContainer"><table class="tbl"><tbody><tr><td class="empty-row" colspan="6">Henüz tahsilat yok</td></tr></tbody></table></div>
+    </div>
+
+    <!-- Teknisyen Formu -->
+    <div class="card" style="margin-bottom:10px;">
+        <div class="card-head"><div class="card-head-ico ico-amber"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></div><div class="card-head-title">Teknisyen Formu</div></div>
+        <div class="card-body">
+            <div class="fg"><label>Arıza Tespiti</label><textarea id="arizaTespiti" placeholder="Arıza tespiti detayları..."></textarea></div>
+            <div class="fg"><label>Yapılan İşlemler</label><textarea id="yapilanIslemler" placeholder="Yapılan işlemler..."></textarea></div>
+            <div class="fg"><label>Kullanılan Parça</label><input type="text" id="kullanilanParca" placeholder="Parça adı / kodu"></div>
+            <div class="fg"><label>Toplam Tutar (₺)</label><input type="number" id="toplamTutar" placeholder="0.00"></div>
+        </div>
+    </div>
+
+    <!-- İmzalar -->
+    <div class="imza-grid" style="margin-bottom:10px;">
+        <div class="imza-box" id="mImzaBox" onclick="openImzaSheet('musteri')">
+            <div class="imza-lbl">Müşteri İmzası</div>
+            <div class="imza-hint" id="mImzaHint">Tıkla → İmza Al</div>
+            <img id="mImzaImg" class="imza-img" style="display:none">
+            <div id="onayDiv" style="display:none;margin-top:8px;font-size:9px;color:#6ee7b7;line-height:1.4;text-align:left;padding:5px;background:rgba(16,185,129,0.1);border-radius:6px;">
+                <label style="display:flex;align-items:flex-start;gap:4px;cursor:pointer;" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="onayCheck" style="margin-top:1px;width:11px;height:11px;">
+                    <span>Yapılan işlemleri ve ücretleri kontrol ettim, eksiksiz teslim aldım.</span>
+                </label>
+            </div>
+        </div>
+        <div class="imza-box" id="tImzaBox" onclick="openImzaSheet('teknisyen')">
+            <div class="imza-lbl">Teknisyen İmzası</div>
+            <div class="imza-hint" id="tImzaHint">Tıkla → İmza Al</div>
+            <img id="tImzaImg" class="imza-img" style="display:none">
+            <div style="margin-top:6px;font-size:9px;color:rgba(255,255,255,0.3);text-align:center;">Sicil: 009838-FMS</div>
+        </div>
+    </div>
+    <div class="note">Değişiklikleri kaydetmek için "Güncelle" butonuna basın</div>
+
+</div><!-- /content -->
+
+<!-- Bottom Bar -->
+<div class="bottom-bar">
+    <button class="btn btn-blue" onclick="openPdfPreview()">PDF Fiş</button>
+    <button class="btn btn-wa" onclick="whatsappPDF()">SMS Gönder</button>
+    <button class="btn btn-wa" onclick="sendWAMusteri()">Müşteriye Bildir</button>
+    <button class="btn btn-dk" onclick="copyText()">Kopyala</button>
+    <button class="btn btn-dk" onclick="printForm()">Yazdır</button>
+    <button class="btn btn-save" onclick="guncelle()">Servisi Güncelle</button>
+</div>
+
+<!-- DURUM SHEET -->
+<div class="overlay" id="durumOverlay">
+    <div class="sheet">
+        <div class="sheet-head"><div class="sheet-ico"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div class="sheet-title">Servis Durumu</div></div>
+        <div class="sheet-body" id="durumList"></div>
+        <div class="sheet-foot"><button class="sheet-close" onclick="closeOverlay('durumOverlay')">Kapat</button></div>
+    </div>
+</div>
+
+<!-- PARA SHEET -->
+<div class="overlay" id="paraOverlay">
+    <div class="sheet">
+        <div class="sheet-head"><div class="sheet-ico"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div class="sheet-title">Ödeme Ekle</div></div>
+        <div class="form-body">
+            <div class="form-fg">
+                <label>Tahsil Eden</label>
+                <select id="tahsilEden">
+                    <option value="Can Karaca">Can Karaca</option>
+                    <option value="Kürşat Karayaka">Kürşat Karayaka</option>
+                    <option value="Bölge Merkez">Bölge Merkez</option>
+                    <option value="Servis Görevlisi">Servis Görevlisi</option>
+                    <option value="Çağrı Merkezi">Çağrı Merkezi</option>
+                </select>
+            </div>
+            <div class="form-fg">
+                <label>Ödeme Şekli</label>
+                <select id="odemeSekli">
+                    <option value="Nakit">Nakit</option>
+                    <option value="Kredi Kartı">Kredi Kartı</option>
+                    <option value="Havale/EFT">Havale/EFT</option>
+                    <option value="Çek">Çek</option>
+                    <option value="Diğer">Diğer</option>
+                </select>
+            </div>
+            <div class="form-fg">
+                <label>Ödeme Durumu</label>
+                <select id="odemeDurumu">
+                    <option value="Tamamlandı">Tamamlandı</option>
+                    <option value="Beklemede">Beklemede</option>
+                    <option value="Kısmi Ödeme">Kısmi Ödeme</option>
+                    <option value="İptal">İptal</option>
+                </select>
+            </div>
+            <div class="form-fg"><label>Tutar (₺)</label><input type="number" id="odemeTutar" placeholder="0.00" style="font-size:18px;font-weight:700;"></div>
+            <button class="add-btn" onclick="paraEkle()">+ Tahsilat Ekle</button>
+        </div>
+        <div class="sheet-foot"><button class="sheet-close" onclick="closeOverlay('paraOverlay')">Kapat</button></div>
+    </div>
+</div>
+
+<!-- İMZA SHEET -->
+<div class="overlay" id="imzaOverlay">
+    <div class="sheet" style="max-height:88vh;">
+        <div class="sheet-head"><div class="sheet-ico"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></div><div class="sheet-title" id="imzaTitle">İmza</div></div>
+        <div class="form-body">
+            <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;text-align:center;">Parmak veya kalemle imza atın</p>
+            <div class="canvas-wrap"><canvas id="imzaCanvas"></canvas></div>
+            <div class="canvas-btns">
+                <button class="cbtn cbtn-gray" onclick="clearCanvas()">Temizle</button>
+                <button class="cbtn cbtn-blue" onclick="saveImza()">Kaydet</button>
+            </div>
+        </div>
+        <div class="sheet-foot"><button class="sheet-close" onclick="closeOverlay('imzaOverlay')">Kapat</button></div>
+    </div>
+</div>
+
+<!-- PDF PREVIEW MODAL -->
+<div class="pdf-modal-overlay" id="pdfOverlay" onclick="closePdfModalBg(event)">
+    <div class="pdf-modal">
+        <div class="pdf-toolbar">
+            <h3>📄 Servis Formu Önizleme</h3>
+            <div class="pdf-actions">
+                <button class="pdf-btn pdf-btn-print" onclick="printFromPreview()">🖨️ Yazdır</button>
+                <button class="pdf-btn pdf-btn-dl" onclick="downloadPDF()">⬇️ PDF</button>
+                <button class="pdf-btn pdf-btn-close" onclick="closePdfModal()">✕</button>
+            </div>
+        </div>
+        <div class="pdf-content">
+            <div class="pdf-loading" id="pdfLoading"><div class="pdf-spinner"></div><span>Hazırlanıyor...</span></div>
+            <div id="pdfFrame"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- PDF TEMPLATE - Görsel 1 & 3 referanslı profesyonel A4 layout -->
+<div id="pdfTemplate">
+    <!-- Başlık -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #1e40af;">
+        <div>
+            <div style="font-size:15px;font-weight:800;color:#1e40af;letter-spacing:0.5px;">İKLİM ISITMA &amp; SOĞUTMA SİSTEMLERİ</div>
+            <div style="font-size:11px;font-weight:700;color:#dc2626;margin:2px 0;">BÖLGE MERKEZ SERVİSİ</div>
+            <div style="font-size:9px;color:#6b7280;">TEL: 0850 305 2996</div>
+            <div style="font-size:9px;color:#6b7280;">GEZİCİ BÖLGE MERKEZ • DAYANIKLI TÜKETİM MALLARI</div>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:16px;font-weight:800;color:#1e40af;border:2px solid #1e40af;padding:6px 14px;border-radius:6px;margin-bottom:4px;">- SERVİS FORMU -</div>
+            <div style="font-size:9px;color:#374151;">Servis No: <strong id="pdfServisNo" style="font-size:14px;color:#1e40af;font-weight:800;"></strong></div>
+            <div style="font-size:9px;color:#374151;">Servis Kayıt Tarihi: <strong id="pdfKayit"></strong></div>
+        </div>
+    </div>
+
+    <!-- Müşteri + Cihaz yan yana -->
+    <div style="display:flex;gap:10px;margin-bottom:10px;">
+        <!-- Müşteri Bilgileri -->
+        <div style="flex:1;border:1px solid #d1d5db;padding:8px 10px;border-radius:6px;">
+            <div style="font-size:9px;font-weight:800;color:#1e40af;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">- MÜŞTERİ BİLGİLERİ -</div>
+            <table style="width:100%;font-size:9px;border-collapse:collapse;">
+                <tr><td style="color:#6b7280;padding:2px 0;width:28%;">Ad</td><td style="font-weight:600;padding:2px 0;" id="pdfMAd"></td></tr>
+                <tr><td style="color:#6b7280;padding:2px 0;">Telefon</td><td style="font-weight:600;padding:2px 0;" id="pdfMTel"></td></tr>
+                <tr><td style="color:#6b7280;padding:2px 0;vertical-align:top;">Adres</td><td style="padding:2px 0;line-height:1.4;" id="pdfMAdres"></td></tr>
+                <tr><td style="color:#6b7280;padding:2px 0;">Vergi Daire / No</td><td style="padding:2px 0;" id="pdfMKimlik"></td></tr>
+                <tr><td style="color:#6b7280;padding:2px 0;">Müsait Olma Zamanı</td><td style="font-weight:600;padding:2px 0;" id="pdfMZaman"></td></tr>
+                <tr><td style="color:#6b7280;padding:2px 0;vertical-align:top;">Operatör Notu</td><td style="padding:2px 0;" id="pdfMNot"></td></tr>
+            </table>
+        </div>
+        <!-- Cihaz Bilgisi -->
+        <div style="flex:0 0 220px;border:1px solid #d1d5db;padding:8px 10px;border-radius:6px;">
+            <div style="font-size:9px;font-weight:800;color:#dc2626;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">- CİHAZ BİLGİSİ -</div>
+            <table style="width:100%;font-size:9px;border-collapse:collapse;">
+                <tr><td style="color:#6b7280;padding:2px 0;width:40%;">Cihaz Markası</td><td style="font-weight:600;" id="pdfCMarka"></td></tr>
+                <tr><td style="color:#6b7280;padding:2px 0;">Cihaz Türü</td><td style="font-weight:600;" id="pdfCTur"></td></tr>
+                <tr><td style="color:#6b7280;padding:2px 0;">Cihaz Modeli</td><td style="font-weight:600;" id="pdfCModel"></td></tr>
+                <tr><td style="color:#6b7280;padding:2px 0;">Cihaz Seri No</td><td id="pdfCSeriNo"></td></tr>
+                <tr><td style="color:#6b7280;padding:2px 0;">Cihaz Arızası</td><td style="font-weight:700;color:#dc2626;" id="pdfCAriza"></td></tr>
+            </table>
+            <div id="pdfGarantiRow" style="display:none;margin-top:6px;padding-top:5px;border-top:1px dashed #e5e7eb;">
+                <span style="font-size:8px;color:#6b7280;">Garanti Bitiş T.: </span>
+                <span style="font-size:8px;font-weight:700;color:#059669;" id="pdfCGaranti"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Servis Durumu -->
+    <div style="border:1px solid #d1d5db;padding:7px 10px;border-radius:6px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:9px;font-weight:700;color:#374151;">SERVİS DURUMU :</span>
+        <span style="font-size:10px;font-weight:800;color:#dc2626;" id="pdfDurum"></span>
+    </div>
+
+    <!-- Serviste Yapılan Son İşlemler -->
+    <div style="margin-bottom:10px;">
+        <div style="font-size:9px;font-weight:800;color:#374151;text-align:center;padding:5px;background:#f3f4f6;border:1px solid #d1d5db;border-bottom:none;border-radius:4px 4px 0 0;">- SERVİSTE YAPILAN SON İŞLEMLER -</div>
+        <table style="width:100%;font-size:8.5px;border-collapse:collapse;border:1px solid #d1d5db;border-radius:0 0 4px 4px;overflow:hidden;">
+            <thead>
+                <tr style="background:#f9fafb;">
+                    <th style="padding:5px 8px;text-align:left;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:700;width:20%;">TARİH</th>
+                    <th style="padding:5px 8px;text-align:left;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:700;width:20%;">İŞLEM ADI</th>
+                    <th style="padding:5px 8px;text-align:left;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:700;">AÇIKLAMA</th>
+                </tr>
+            </thead>
+            <tbody id="pdfIslemler"></tbody>
+        </table>
+    </div>
+
+    <!-- Para Hareketleri -->
+    <div style="margin-bottom:10px;">
+        <div style="font-size:9px;font-weight:800;color:#374151;text-align:center;padding:5px;background:#f3f4f6;border:1px solid #d1d5db;border-bottom:none;border-radius:4px 4px 0 0;">- ÖDEME HAREKETLERİ -</div>
+        <table style="width:100%;font-size:8.5px;border-collapse:collapse;border:1px solid #d1d5db;border-radius:0 0 4px 4px;overflow:hidden;">
+            <thead>
+                <tr style="background:#f9fafb;">
+                    <th style="padding:5px 8px;text-align:left;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:700;">TARİH</th>
+                    <th style="padding:5px 8px;text-align:left;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:700;">TAHSİL EDEN</th>
+                    <th style="padding:5px 8px;text-align:left;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:700;">ÖDEME ŞEKLİ</th>
+                    <th style="padding:5px 8px;text-align:left;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:700;">ÖDEME DURUMU</th>
+                    <th style="padding:5px 8px;text-align:right;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:700;">TUTAR</th>
+                </tr>
+            </thead>
+            <tbody id="pdfParaHareketleri"></tbody>
+        </table>
+    </div>
+
+    <!-- Notlar -->
+    <div style="border:1px solid #d1d5db;padding:8px 10px;border-radius:6px;margin-bottom:10px;">
+        <div style="font-size:9px;font-weight:800;color:#374151;margin-bottom:5px;">- NOTLAR -</div>
+        <div style="font-size:8px;color:#374151;line-height:1.6;">
+            1 - YAPILAN İŞLEMLER 1 YIL GARANTİ ALTINDADIR.<br>
+            2 - BU SERVİS FORMU FATURA YERİNE GEÇMEZ.<br>
+            3 - KAPORA İADESİ KESİNLİKLE YOKTUR.<br>
+            4 - TAKILAN PARÇANIN GERİ İADESİ YOKTUR.
+        </div>
+    </div>
+
+    <!-- İmzalar -->
+    <div style="display:flex;gap:16px;margin-bottom:10px;">
+        <div style="flex:1;border:1px solid #d1d5db;padding:10px 12px;border-radius:6px;text-align:center;">
+            <div style="font-size:9px;font-weight:700;color:#374151;margin-bottom:20px;">Müşteri İmzası</div>
+            <div id="pdfMImza" style="height:55px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #374151;margin-bottom:6px;"></div>
+            <div style="font-size:8px;color:#6b7280;" id="pdfMAd2"></div>
+            <div style="font-size:7px;color:#6b7280;margin-top:4px;text-align:left;line-height:1.4;background:#f9fafb;padding:4px;border-radius:3px;">
+                Yapılan işlemleri, değiştirilen parçaları, ücret bilgisini ve garanti şartlarını kontrol ettim; eksiksiz teslim aldığımı kabul ediyorum.
+            </div>
+        </div>
+        <div style="flex:1;border:1px solid #d1d5db;padding:10px 12px;border-radius:6px;text-align:center;">
+            <div style="font-size:9px;font-weight:700;color:#374151;margin-bottom:20px;">Teknisyen İmzası</div>
+            <div id="pdfTImza" style="height:55px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #374151;margin-bottom:6px;"></div>
+            <div style="font-size:8px;color:#6b7280;">Personel Sicil No: 009838-FMS</div>
+        </div>
+    </div>
+
+    <!-- Oluşturulma tarihi -->
+    <div style="font-size:8px;color:#6b7280;margin-bottom:8px;" id="pdfOlusturma"></div>
+
+    <!-- Sorumluluklar -->
+    <div style="border:1px solid #e5e7eb;padding:8px 10px;border-radius:4px;background:#f9fafb;margin-bottom:10px;">
+        <div style="font-size:8px;font-weight:700;color:#374151;text-align:center;margin-bottom:5px;">SERVİS İSTASYONLARININ SORUMLULUKLARI</div>
+        <div style="font-size:7px;color:#4b5563;line-height:1.5;column-count:2;column-gap:12px;">
+            (1) Tüketicinin bulunduğu yerde yetkili servis istasyonunun olmaması halinde satış sonrası hizmetlerin verilmesinden, tüketiciye en yakın yetkili servis sorumludur.<br>
+            (2) Tüketiciye en yakın yetkili servis istasyonunun satış sonrası hizmet verilmesinin mümkün olmaması durumunda; imalat firmasını ya da diğer yetkili servis istasyonuna ulaşım ve geri gönderimle ilgili olarak giderlerin, taşıma, posta, kargo veya benzeri herhangi bir ulaşım gideri talep edilmez.<br>
+            (3) Servis istasyonları, Tüketicinin 11. maddesinde belirtilen hakların kullanılmasına ilişkin belgeleri ve bunlara ilişkin teknik bilgileri vermesi zorunludur.<br>
+            (4) Kullanım ömrü süresince yetkili servis istasyonlarındaki bakım ve onarım süresi azami tamire tarihinde, garanti süresi dolmamış malın garanti süresi içinde yetkili servis istasyonuna veya satıcıya tüketici tarafından teslim tarihinden itibaren, garanti süresi dolmuş ise teknik özelliklerine uygun yedek parça bulunamaması ya da benzeri teknik ve zorunlu nedenlerle belirlenen azami tamir süresi geçmesi halinde, tüketicinin seçimlik hakları söz konusu olur.<br>
+            (5) Tüketicinin yazılı başvurusu üzerine; ürün 10 iş günü içinde tamire tabi tutulur.<br>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1e40af;color:white;border-radius:6px;margin-bottom:6px;">
+        <div style="font-size:8px;">
+            <div style="font-weight:700;">İKLİM ISITMA &amp; SOĞUTMA SİSTEMLERİ</div>
+            <div style="opacity:0.85;">BÖLGE MERKEZ SERVİSİ</div>
+        </div>
+        <div style="text-align:center;">
+            <div style="width:42px;height:42px;background:white;padding:2px;border-radius:3px;margin:0 auto 2px;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=42x42&data=https://api.whatsapp.com/send/?phone=908503052996" style="width:100%;height:100%;" alt="QR">
+            </div>
+            <div style="font-size:7px;opacity:0.85;">WhatsApp</div>
+        </div>
+        <div style="text-align:right;font-size:8px;">
+            <div style="font-size:13px;font-weight:800;">0850 305 2996</div>
+            <div style="opacity:0.85;">GEZİCİ BÖLGE MERKEZ</div>
+        </div>
+    </div>
+    <div style="text-align:center;font-size:7px;color:#9ca3af;">Bu Servis Formu <span id="pdfOlusturma2"></span> Tarihinde Oluşturulmuştur. &nbsp;|&nbsp; Dok No: <span id="pdfDocNoFtr"></span></div>
+</div>
+
+<!-- Print View -->
+<div id="printView"></div>
+
+<script>
+    if(!sessionStorage.getItem('karaca_auth')) window.location.href='index.html';
+
+    const DURUMLAR=['Yerinde Bakım Yapıldı','Bakım Yapıldı','Atölyeye Aldır (Nakliye Gönder)','Fiyatta Anlaşılamadı','Ürün Garantili Çıktı','Müşteriye Ulaşılamadı','Müşteri İptal Etti','Parçası Atölyeye Alındı','Haber Verecek','Farklı Teknisyen Yönlendir','Teknisyen Yönlendir','Tamamlandı'];
+    let servis=null, imzaTipi='', canvas, ctx, isDrawing=false, lastDocNo='';
+
+    // Init
+    document.getElementById('hdrSaat').textContent=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    setInterval(()=>document.getElementById('hdrSaat').textContent=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}),30000);
+
+    function load(){
+        const d=sessionStorage.getItem('current_servis');
+        if(!d){ window.location.href='yeni-servis.html'; return; }
+        servis=JSON.parse(d);
+        document.getElementById('hdrNo').textContent=servis.servisNo;
+        document.getElementById('hdrTarih').textContent=new Date(servis.kayitTarihi).toLocaleDateString('tr-TR');
+        document.getElementById('mAd').textContent=servis.musteri.ad;
+        document.getElementById('mTel').textContent=servis.musteri.telefon1;
+        document.getElementById('mAdres').textContent=servis.musteri.adres+', '+servis.musteri.ilce;
+        document.getElementById('mZaman').textContent=new Date(servis.musteri.musaitOlmaZamani.tarih).toLocaleDateString('tr-TR')+' '+servis.musteri.musaitOlmaZamani.baslangic;
+        document.getElementById('cMarka').textContent=servis.cihaz.marka;
+        document.getElementById('cTur').textContent=servis.cihaz.tur;
+        document.getElementById('cModel').textContent=servis.cihaz.model;
+        if(servis.cihaz.seriNo){ document.getElementById('cSeriNo').textContent=servis.cihaz.seriNo; document.getElementById('seriNoRow').style.display='block'; }
+        document.getElementById('cAriza').textContent=servis.cihaz.ariza;
+        if(servis.cihaz.garantiBitis){ const k=Math.ceil((new Date(servis.cihaz.garantiBitis)-new Date())/(1000*60*60*24)); document.getElementById('cGaranti').textContent=new Date(servis.cihaz.garantiBitis).toLocaleDateString('tr-TR')+' ('+k+' gün)'; document.getElementById('garantiRow').style.display='block'; }
+        document.getElementById('durumVal').textContent=servis.durum||'— Seçiniz —';
+        renderIslemler(); renderPara();
+        document.getElementById('arizaTespiti').value=servis.arizaTespiti||'';
+        document.getElementById('yapilanIslemler').value=servis.yapilanIslemler||'';
+        document.getElementById('kullanilanParca').value=servis.kullanilanParca||'';
+        document.getElementById('toplamTutar').value=servis.toplamTutar||'';
+        if(servis.musteriImza){ document.getElementById('mImzaHint').style.display='none'; document.getElementById('mImzaImg').src=servis.musteriImza; document.getElementById('mImzaImg').style.display='block'; document.getElementById('onayDiv').style.display='block'; document.getElementById('mImzaBox').classList.add('signed'); }
+        if(servis.teknisyenImza){ document.getElementById('tImzaHint').style.display='none'; document.getElementById('tImzaImg').src=servis.teknisyenImza; document.getElementById('tImzaImg').style.display='block'; document.getElementById('tImzaBox').classList.add('signed'); }
+    }
+
+    function renderIslemler(){
+        const tb=document.getElementById('islemTbody');
+        if(!servis.islemler?.length){ tb.innerHTML='<tr><td class="empty-row" colspan="3">Kayıt yok</td></tr>'; return; }
+        tb.innerHTML=servis.islemler.slice().reverse().map(i=>`<tr><td style="white-space:nowrap">${new Date(i.tarih).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td><td>${i.islemiYapan||'-'}</td><td style="white-space:pre-line">${i.aciklama}</td></tr>`).join('');
+    }
+
+    function renderPara(){
+        const c=document.getElementById('paraContainer');
+        if(!servis.paraHareketleri?.length){ c.innerHTML='<table class="tbl"><tbody><tr><td class="empty-row" colspan="6">Henüz tahsilat yok</td></tr></tbody></table>'; return; }
+        const top=servis.paraHareketleri.reduce((a,p)=>a+p.tutar,0);
+        c.innerHTML=`<table class="tbl"><thead><tr><th>Tarih</th><th>Yapan</th><th>Şekil</th><th>Durum</th><th style="text-align:right">Tutar</th><th>#</th></tr></thead><tbody>${servis.paraHareketleri.map(p=>`<tr><td style="white-space:nowrap">${new Date(p.tarih).toLocaleDateString('tr-TR')}</td><td>${p.islemiYapan||'-'}</td><td>${p.odemeSekli}</td><td class="tbl-green">${p.odemeDurumu}</td><td style="text-align:right;font-weight:700;color:#60a5fa">${p.tutar.toLocaleString('tr-TR')} ₺</td><td><button onclick="silPara('${p.id}')" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:16px;font-weight:bold;padding:0 4px">×</button></td></tr>`).join('')}</tbody></table><div class="para-total"><span style="font-size:12px;color:rgba(255,255,255,0.5);">Toplam Tahsilat</span><div class="para-total-val">${top.toLocaleString('tr-TR')} ₺</div></div>`;
+    }
+
+    function toast(msg,t){const el=document.getElementById('toast');el.textContent=msg;el.style.background=t==='err'?'#dc2626':'#059669';el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
+    function closeOverlay(id){document.getElementById(id).classList.remove('show');}
+    function openOverlay(id){document.getElementById(id).classList.add('show');}
+
+    // Durum
+    function openDurumSheet(){
+        document.getElementById('durumList').innerHTML=DURUMLAR.map(d=>`<div class="sheet-item ${servis.durum===d?'sel':''}" onclick="setDurum('${d}')">${d}</div>`).join('');
+        openOverlay('durumOverlay');
+    }
+    function setDurum(d){
+        servis.durum=d; document.getElementById('durumVal').textContent=d;
+        if(!servis.islemler) servis.islemler=[];
+        servis.islemler.push({tarih:new Date().toISOString(),islemiYapan:'Teknisyen',aciklama:'Durum güncellendi: '+d});
+        saveServis(); renderIslemler(); closeOverlay('durumOverlay'); toast('Durum güncellendi');
+    }
+
+    // Para
+    function openParaSheet(){document.getElementById('odemeTutar').value=''; openOverlay('paraOverlay');}
+    function paraEkle(){
+        const t=parseFloat(document.getElementById('odemeTutar').value);
+        if(!t||t<=0){toast('Geçerli tutar girin','err');return;}
+        if(!servis.paraHareketleri) servis.paraHareketleri=[];
+        servis.paraHareketleri.push({
+            id:Date.now().toString(),
+            tarih:new Date().toISOString(),
+            islemiYapan:document.getElementById('tahsilEden').value,
+            tahsilEden:document.getElementById('tahsilEden').value,
+            odemeSekli:document.getElementById('odemeSekli').value,
+            odemeDurumu:document.getElementById('odemeDurumu').value,
+            tutar:t
+        });
+        servis.toplamTutar=servis.paraHareketleri.reduce((a,p)=>a+p.tutar,0);
+        document.getElementById('toplamTutar').value=servis.toplamTutar;
+        saveServis(); renderPara(); closeOverlay('paraOverlay'); toast(t.toLocaleString('tr-TR')+' ₺ eklendi');
+    }
+    function silPara(id){
+        if(!confirm('Bu ödemeyi silmek istediğinize emin misiniz?')) return;
+        servis.paraHareketleri=servis.paraHareketleri.filter(p=>p.id!==id);
+        servis.toplamTutar=servis.paraHareketleri.reduce((a,p)=>a+p.tutar,0);
+        document.getElementById('toplamTutar').value=servis.toplamTutar;
+        saveServis(); renderPara(); toast('Ödeme silindi');
+    }
+
+    // İmza
+    function openImzaSheet(tip){
+        imzaTipi=tip;
+        document.getElementById('imzaTitle').textContent=tip==='musteri'?'Müşteri İmzası':'Teknisyen İmzası';
+        openOverlay('imzaOverlay'); setTimeout(initCanvas,60);
+    }
+    function initCanvas(){
+        canvas=document.getElementById('imzaCanvas'); ctx=canvas.getContext('2d');
+        const r=canvas.getBoundingClientRect();
+        canvas.width=r.width*(window.devicePixelRatio||1); canvas.height=r.height*(window.devicePixelRatio||1);
+        ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1);
+        ctx.strokeStyle='#1e40af'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round';
+        ctx.fillStyle='#f8fafc'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        isDrawing=false;
+        const gp=e=>{const r=canvas.getBoundingClientRect(),s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};};
+        canvas.onmousedown=canvas.ontouchstart=e=>{e.preventDefault();isDrawing=true;const p=gp(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+        canvas.onmousemove=canvas.ontouchmove=e=>{if(!isDrawing)return;e.preventDefault();const p=gp(e);ctx.lineTo(p.x,p.y);ctx.stroke();};
+        canvas.onmouseup=canvas.ontouchend=()=>isDrawing=false;
+    }
+    function clearCanvas(){if(ctx){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,canvas.width,canvas.height);}}
+    function saveImza(){
+        if(!canvas) return;
+        const d=canvas.toDataURL('image/png');
+        if(imzaTipi==='musteri'){servis.musteriImza=d;document.getElementById('mImzaHint').style.display='none';document.getElementById('mImzaImg').src=d;document.getElementById('mImzaImg').style.display='block';document.getElementById('onayDiv').style.display='block';document.getElementById('mImzaBox').classList.add('signed');}
+        else{servis.teknisyenImza=d;document.getElementById('tImzaHint').style.display='none';document.getElementById('tImzaImg').src=d;document.getElementById('tImzaImg').style.display='block';document.getElementById('tImzaBox').classList.add('signed');}
+        saveServis(); closeOverlay('imzaOverlay'); toast('İmza kaydedildi ✓');
+    }
+
+    function guncelle(){
+        servis.arizaTespiti=document.getElementById('arizaTespiti').value;
+        servis.yapilanIslemler=document.getElementById('yapilanIslemler').value;
+        servis.kullanilanParca=document.getElementById('kullanilanParca').value;
+        servis.toplamTutar=parseFloat(document.getElementById('toplamTutar').value)||0;
+        if(!servis.islemler) servis.islemler=[];
+        servis.islemler.push({tarih:new Date().toISOString(),islemiYapan:'Teknisyen',aciklama:'Form güncellendi'});
+        saveServis(); renderIslemler(); toast('✓ Kaydedildi');
+    }
+
+    function saveServis(){
+        sessionStorage.setItem('current_servis',JSON.stringify(servis));
+        try{const l=JSON.parse(localStorage.getItem('karaca_servisler')||'[]');const i=l.findIndex(s=>s.id===servis.id||s.servisNo===servis.servisNo);if(i>=0)l[i]=servis;else l.unshift(servis);localStorage.setItem('karaca_servisler',JSON.stringify(l));}catch(e){}
+    }
+
+    // PDF / Print
+    function makeDocNo(){return'FMS-2026-'+Math.floor(1000+Math.random()*9000);}
+
+    function fillTmpl(docNo){
+        // doc no set in footer;
+        document.getElementById('pdfDocNoFtr').textContent=docNo;
+        document.getElementById('pdfServisNo').textContent='#'+servis.servisNo;
+        document.getElementById('pdfDurum').textContent=servis.durum||'-';
+        document.getElementById('pdfKayit').textContent=new Date(servis.kayitTarihi).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+        // Müşteri
+        document.getElementById('pdfMAd').textContent=servis.musteri.ad;
+        document.getElementById('pdfMAd2').textContent=servis.musteri.ad;
+        document.getElementById('pdfMTel').textContent=servis.musteri.telefon1+(servis.musteri.telefon2?' - '+servis.musteri.telefon2:'');
+        document.getElementById('pdfMAdres').textContent=servis.musteri.adres+(servis.musteri.ilce?'\n'+servis.musteri.ilce+' / '+(servis.musteri.il||''):'');
+        document.getElementById('pdfMKimlik').textContent=servis.musteri.kimlikNo||'—';
+        document.getElementById('pdfMNot').textContent=servis.operatorNotu||'—';
+        const mz=servis.musteri.musaitOlmaZamani;
+        document.getElementById('pdfMZaman').textContent=mz?new Date(mz.tarih).toLocaleDateString('tr-TR')+' - '+(mz.baslangic||'')+(mz.bitis?' ile '+mz.bitis+' Arası':''):'—';
+
+        // Cihaz
+        document.getElementById('pdfCMarka').textContent=servis.cihaz.marka;
+        document.getElementById('pdfCTur').textContent=servis.cihaz.tur;
+        document.getElementById('pdfCModel').textContent=servis.cihaz.model||'—';
+        document.getElementById('pdfCAriza').textContent=servis.cihaz.ariza;
+        if(servis.cihaz.garantiBitis){
+            const k=Math.ceil((new Date(servis.cihaz.garantiBitis)-new Date())/(1000*60*60*24));
+            document.getElementById('pdfCGaranti').textContent=new Date(servis.cihaz.garantiBitis).toLocaleDateString('tr-TR')+' ('+k+' Gün Kaldı)';
+        } else {
+            document.getElementById('pdfGarantiRow').style.display='none';
+        }
+
+        // İşlemler (son 5)
+        const islemTb=document.getElementById('pdfIslemler');
+        const islemler=(servis.islemler||[]).slice(-5).reverse();
+        if(islemler.length===0){
+            islemTb.innerHTML='<tr><td colspan="3" style="padding:6px 8px;color:#9ca3af;text-align:center;">—</td></tr>';
+        } else {
+            islemTb.innerHTML=islemler.map(i=>`<tr>
+                <td style="padding:4px 8px;border-bottom:1px solid #f3f4f6;vertical-align:top;">${new Date(i.tarih).toLocaleDateString('tr-TR')}<br><span style="color:#9ca3af;">${new Date(i.tarih).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span></td>
+                <td style="padding:4px 8px;border-bottom:1px solid #f3f4f6;vertical-align:top;font-weight:600;">${i.islemAdi||i.islemiYapan||'—'}</td>
+                <td style="padding:4px 8px;border-bottom:1px solid #f3f4f6;white-space:pre-line;">${i.aciklama||'—'}</td>
+            </tr>`).join('');
+        }
+
+        // Para hareketleri
+        const paraTb=document.getElementById('pdfParaHareketleri');
+        const paralar=servis.paraHareketleri||[];
+        if(paralar.length===0){
+            paraTb.innerHTML='<tr><td colspan="5" style="padding:6px 8px;color:#9ca3af;text-align:center;font-style:italic;">Henüz bir para tahsilatı yapmadınız.</td></tr>';
+        } else {
+            paraTb.innerHTML=paralar.map(p=>`<tr>
+                <td style="padding:4px 8px;border-bottom:1px solid #f3f4f6;">${new Date(p.tarih).toLocaleDateString('tr-TR')}</td>
+                <td style="padding:4px 8px;border-bottom:1px solid #f3f4f6;">${p.tahsilEden||'—'}</td>
+                <td style="padding:4px 8px;border-bottom:1px solid #f3f4f6;">${p.odemeSekli}</td>
+                <td style="padding:4px 8px;border-bottom:1px solid #f3f4f6;">${p.odemeDurumu}</td>
+                <td style="padding:4px 8px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:700;">${p.tutar.toLocaleString('tr-TR',{minimumFractionDigits:2})} TL</td>
+            </tr>`).join('');
+        }
+
+        // Oluşturulma tarihi ve dok no
+        const nowStr=new Date().toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+        const oEl=document.getElementById('pdfOlusturma'); if(oEl) oEl.textContent='Bu Servis Formu '+nowStr+' Tarihinde Oluşturulmuştur.';
+        const o2=document.getElementById('pdfOlusturma2'); if(o2) o2.textContent=nowStr;
+        const dftr=document.getElementById('pdfDocNoFtr'); if(dftr) dftr.textContent=docNo;
+
+        // İmzalar
+        const mi=document.getElementById('pdfMImza'); mi.innerHTML='';
+        const ti=document.getElementById('pdfTImza'); ti.innerHTML='';
+        if(servis.musteriImza){const img=new Image();img.src=servis.musteriImza;img.style='max-height:50px;max-width:100%;object-fit:contain;';mi.appendChild(img);}
+        if(servis.teknisyenImza){const img=new Image();img.src=servis.teknisyenImza;img.style='max-height:50px;max-width:100%;object-fit:contain;';ti.appendChild(img);}
+    }
+
+    async function openPdfPreview(){
+        openOverlay('pdfOverlay'); // no, use custom
+        const ov=document.getElementById('pdfOverlay'); ov.classList.add('show');
+        const loading=document.getElementById('pdfLoading'); const frame=document.getElementById('pdfFrame');
+        loading.style.display='flex'; frame.style.display='none';
+        lastDocNo=makeDocNo(); fillTmpl(lastDocNo);
+        await new Promise(r=>setTimeout(r,120));
+        const tmpl=document.getElementById('pdfTemplate');
+        const clone=tmpl.cloneNode(true);
+        clone.style.cssText='position:relative;left:0;top:0;width:100%;padding:16px 20px;font-size:9.5px;background:white;box-sizing:border-box;color:#1f2937;font-family:Segoe UI,Arial,sans-serif;';
+        frame.innerHTML=''; frame.appendChild(clone);
+        loading.style.display='none'; frame.style.display='block';
+    }
+    function closePdfModal(){document.getElementById('pdfOverlay').classList.remove('show');}
+    function closePdfModalBg(e){if(e.target===document.getElementById('pdfOverlay'))closePdfModal();}
+
+    function printFromPreview(){
+        const clone=document.getElementById('pdfTemplate').cloneNode(true);
+        clone.style.cssText='position:relative;left:0;top:0;width:210mm;padding:14mm 16mm;font-size:10px;background:white;box-sizing:border-box;color:#1f2937;font-family:Segoe UI,Arial,sans-serif;';
+        const pv=document.getElementById('printView'); pv.innerHTML=''; pv.appendChild(clone);
+        setTimeout(()=>{window.print();setTimeout(()=>pv.innerHTML='',1500);},250);
+    }
+
+    function printForm(){
+        if(!servis){toast('Servis yüklenmedi','err');return;}
+        fillTmpl(makeDocNo());
+        const clone=document.getElementById('pdfTemplate').cloneNode(true);
+        clone.style.cssText='position:relative;left:0;top:0;width:210mm;padding:14mm 16mm;font-size:10px;background:white;box-sizing:border-box;color:#1f2937;font-family:Segoe UI,Arial,sans-serif;';
+        const pv=document.getElementById('printView'); pv.innerHTML=''; pv.appendChild(clone);
+        setTimeout(()=>{window.print();setTimeout(()=>pv.innerHTML='',1500);},300);
+    }
+
+    async function downloadPDF(){
+        if(!window.jspdf){toast('PDF kütüphanesi yükleniyor','err');return;}
+        const{jsPDF}=window.jspdf;
+        if(!lastDocNo) lastDocNo=makeDocNo();
+        fillTmpl(lastDocNo);
+        const el=document.getElementById('pdfTemplate');
+        const prev=el.style.cssText;
+        el.style.cssText='position:fixed;left:-9999px;top:0;width:794px;padding:22px 28px;font-family:Segoe UI,Arial,sans-serif;font-size:10px;background:white;box-sizing:border-box;z-index:-1;color:#1f2937;';
+        toast('PDF hazırlanıyor...');
+        await new Promise(r=>setTimeout(r,100));
+        try{
+            const cnv=await html2canvas(el,{scale:2,useCORS:true,allowTaint:true,logging:false,width:794,windowWidth:794,backgroundColor:'#ffffff'});
+            el.style.cssText=prev;
+            const iW=cnv.width/2, iH=cnv.height/2;
+            const pdf=new jsPDF('p','mm','a4');
+            const pW=pdf.internal.pageSize.getWidth(), pH=pdf.internal.pageSize.getHeight();
+            const ratio=pW/iW, rH=iH*ratio;
+            if(rH<=pH){ pdf.addImage(cnv.toDataURL('image/jpeg',0.92),'JPEG',0,0,pW,rH); }
+            else{
+                const ppx=pH/ratio*2;
+                const pages=Math.ceil(cnv.height/ppx);
+                for(let p=0;p<pages;p++){
+                    if(p>0) pdf.addPage();
+                    const sc=document.createElement('canvas'); sc.width=cnv.width;
+                    const sh=Math.min(ppx,cnv.height-p*ppx); sc.height=sh;
+                    sc.getContext('2d').drawImage(cnv,0,p*ppx,cnv.width,sh,0,0,cnv.width,sh);
+                    pdf.addImage(sc.toDataURL('image/jpeg',0.92),'JPEG',0,0,pW,sh/2*ratio);
+                }
+            }
+            pdf.save('ServisFormu-'+servis.servisNo+'-'+lastDocNo+'.pdf');
+            toast('PDF indirildi ✓');
+        }catch(err){el.style.cssText=prev;console.error(err);toast('PDF oluşturulamadı','err');}
+    }
+
+    function whatsappPDF(){
+        const msg='BÖLGE MERKEZ SERVİSİ\nServis: #'+servis.servisNo+'\nMüşteri: '+servis.musteri.ad+'\nCihaz: '+servis.cihaz.marka+' '+servis.cihaz.tur+'\nDurum: '+(servis.durum||'-')+'\nTutar: '+(servis.toplamTutar||0).toLocaleString('tr-TR')+' ₺';
+        window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+    }
+    function sendWAMusteri(){
+        const tel=servis.musteri.telefon1.replace(/[^0-9]/g,'');
+        if(!tel||tel.length<10){toast('Telefon bulunamadı','err');return;}
+        const docNo=makeDocNo();
+        const msg='Sayın '+servis.musteri.ad+',\n\nBÖLGE MERKEZ SERVİSİ — '+servis.cihaz.marka+' '+servis.cihaz.tur+' cihazınız için servis hizmeti tamamlanmıştır.\n\nServis No: '+servis.servisNo+'\nDoküman: '+docNo+'\nDurum: '+(servis.durum||'-')+'\nTutar: '+(servis.toplamTutar||0).toLocaleString('tr-TR')+' ₺\n\nDestek: 0850 305 2996';
+        window.open('https://wa.me/9'+tel+'?text='+encodeURIComponent(msg),'_blank');
+        toast('Müşteriye bildirim gönderildi');
+    }
+    function copyText(){
+        const docNo=makeDocNo();
+        const t=`BÖLGE MERKEZ SERVİSİ — #${servis.servisNo}\nDoküman: ${docNo}\nDurum: ${servis.durum||'-'}\n\nMüşteri: ${servis.musteri.ad} / ${servis.musteri.telefon1}\nAdres: ${servis.musteri.adres}, ${servis.musteri.ilce}\n\nCihaz: ${servis.cihaz.marka} ${servis.cihaz.tur} - ${servis.cihaz.model}\nArıza: ${servis.cihaz.ariza}\n\nArıza Tespiti: ${servis.arizaTespiti||'-'}\nYapılan İşlemler: ${servis.yapilanIslemler||'-'}\nKullanılan Parça: ${servis.kullanilanParca||'-'}\n\nTOPLAM: ${(servis.toplamTutar||0).toLocaleString('tr-TR')} ₺\nDestek: 0850 305 2996`;
+        if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>toast('Panoya kopyalandı'));
+        else{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Panoya kopyalandı');}
+    }
+
+    // Overlay backdrop clicks
+    ['durumOverlay','paraOverlay','imzaOverlay'].forEach(id=>{
+        document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeOverlay(id);});
+    });
+
+    load();
+</script>
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KARACA — Yeni Servis</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',system-ui,sans-serif;background:#0f172a;min-height:100vh;color:white;padding-bottom:90px;}
+
+        .topbar{background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+        .back-btn{background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-family:'Inter',sans-serif;}
+        .back-btn svg{width:18px;height:18px;}
+        .page-title{font-size:15px;font-weight:800;}
+        .page-badge{background:rgba(37,99,235,0.2);border:1px solid rgba(37,99,235,0.3);color:#93c5fd;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;}
+
+        .info-strip{background:rgba(37,99,235,0.1);border-bottom:1px solid rgba(37,99,235,0.15);padding:8px 16px;display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.5);}
+        .info-strip strong{color:#93c5fd;}
+
+        /* Prefill banner */
+        .prefill-banner{margin:12px 16px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:10px 14px;display:none;align-items:center;gap:10px;}
+        .prefill-banner.show{display:flex;}
+        .prefill-banner-txt{flex:1;font-size:12px;color:#6ee7b7;}
+        .prefill-banner-txt strong{display:block;font-size:13px;color:white;margin-bottom:2px;}
+        .prefill-clear{background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:18px;}
+
+        /* Cards */
+        .section{margin:0 16px 12px;}
+        .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;}
+        .card-head{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;}
+        .card-head-ico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+        .card-head-ico svg{width:14px;height:14px;color:white;}
+        .ico-blue{background:linear-gradient(135deg,#1e40af,#3b82f6);}
+        .ico-red{background:linear-gradient(135deg,#dc2626,#ef4444);}
+        .ico-green{background:linear-gradient(135deg,#059669,#10b981);}
+        .ico-purple{background:linear-gradient(135deg,#7c3aed,#8b5cf6);}
+        .card-head-title{font-size:12px;font-weight:700;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:0.5px;}
+        .card-body{padding:14px;}
+
+        /* Form */
+        .fg{margin-bottom:12px;}
+        .fg:last-child{margin-bottom:0;}
+        .fg label{display:block;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px;font-weight:500;}
+        .fg input,.fg select,.fg textarea{
+            width:100%;padding:10px 12px;
+            background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);
+            border-radius:10px;color:white;font-size:13px;font-family:'Inter',sans-serif;
+            transition:all 0.2s;
+        }
+        .fg input::placeholder,.fg textarea::placeholder{color:rgba(255,255,255,0.3);}
+        .fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:#3b82f6;background:rgba(255,255,255,0.1);}
+        .fg select option{background:#1e293b;color:white;}
+        .fg textarea{resize:none;min-height:60px;}
+        .fg.err input,.fg.err select,.fg.err textarea,.fg.err .drop-btn{border-color:#ef4444!important;}
+        .err-msg{font-size:10px;color:#f87171;margin-top:3px;display:none;}
+        .fg.err .err-msg{display:block;}
+        .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+        .row3{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;}
+
+        /* Dropdown button */
+        .drop-btn{
+            width:100%;padding:10px 12px;
+            background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);
+            border-radius:10px;color:white;font-size:13px;font-family:'Inter',sans-serif;
+            text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+        }
+        .drop-btn::after{content:'▾';color:rgba(255,255,255,0.4);font-size:12px;}
+        .drop-btn.selected{color:white;border-color:rgba(255,255,255,0.2);}
+        .drop-btn.placeholder{color:rgba(255,255,255,0.3);}
+
+        /* Bottom */
+        .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:#1e293b;border-top:1px solid rgba(255,255,255,0.08);padding:12px 16px;display:flex;gap:10px;z-index:50;}
+        .btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+        .btn-cancel{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.1);}
+        .btn-save{background:linear-gradient(135deg,#1e40af,#3b82f6);color:white;}
+
+        /* Popup sheet */
+        .sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);z-index:200;align-items:flex-end;}
+        .sheet-overlay.show{display:flex;}
+        .sheet{background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:20px 20px 0 0;width:100%;max-height:75vh;display:flex;flex-direction:column;animation:slideUp 0.25s ease;}
+        @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+        .sheet-head{padding:16px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;}
+        .sheet-ico{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1e40af,#3b82f6);display:flex;align-items:center;justify-content:center;}
+        .sheet-ico svg{width:16px;height:16px;color:white;}
+        .sheet-title{font-size:14px;font-weight:700;}
+        .sheet-body{flex:1;overflow-y:auto;}
+        .sheet-item{padding:13px 16px;font-size:13px;color:rgba(255,255,255,0.8);border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;}
+        .sheet-item:hover,.sheet-item.sel{background:rgba(37,99,235,0.15);color:#93c5fd;}
+        .sheet-item.sel::after{content:' ✓';color:#22c55e;}
+        .sheet-foot{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.08);}
+        .sheet-close{width:100%;padding:12px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+
+        /* Toast */
+        .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);background:#059669;color:white;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all 0.3s;z-index:400;white-space:nowrap;}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <button class="back-btn" onclick="window.location.href='ana-sayfa.html'">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Geri
+    </button>
+    <div class="page-title">Yeni Servis</div>
+    <div class="page-badge" id="servisNoBadge">...</div>
+</div>
+<div class="info-strip">
+    <span>📅 <strong id="infoDate">-</strong></span>
+    <span>⏰ <strong id="infoTime">-</strong></span>
+    <span>Yetki: <strong>FMS-42534</strong></span>
+</div>
+
+<!-- Prefill banner -->
+<div class="prefill-banner" id="prefillBanner">
+    <div style="font-size:20px">👤</div>
+    <div class="prefill-banner-txt">
+        <strong id="prefillName">-</strong>
+        Kayıtlı müşteri bilgileri dolduruldu
+    </div>
+    <button class="prefill-clear" onclick="clearPrefill()">✕</button>
+</div>
+
+<!-- Müşteri Bilgisi -->
+<div class="section" style="margin-top:12px;">
+    <div class="card">
+        <div class="card-head"><div class="card-head-ico ico-blue"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div><div class="card-head-title">Müşteri Bilgisi</div></div>
+        <div class="card-body">
+            <div class="fg">
+                <label>Müşteri Tipi</label>
+                <select id="musteriTipi"><option value="Bireysel">Bireysel</option><option value="Kurumsal">Kurumsal</option></select>
+            </div>
+            <div class="fg" id="fg-musteriAdi">
+                <label>Müşteri Adı <span style="color:#ef4444">*</span></label>
+                <input type="text" id="musteriAdi" placeholder="Ad Soyad">
+                <div class="err-msg">Müşteri adı giriniz</div>
+            </div>
+            <div class="row2">
+                <div class="fg" id="fg-telefon1">
+                    <label>Telefon 1 <span style="color:#ef4444">*</span></label>
+                    <input type="tel" id="telefon1" placeholder="05XX XXX XXXX">
+                    <div class="err-msg">Telefon giriniz</div>
+                </div>
+                <div class="fg">
+                    <label>Telefon 2</label>
+                    <input type="tel" id="telefon2" placeholder="05XX XXX XXXX">
+                </div>
+            </div>
+            <div class="row2">
+                <div class="fg" id="fg-il">
+                    <label>İl <span style="color:#ef4444">*</span></label>
+                    <button type="button" class="drop-btn placeholder" id="ilBtn" onclick="openSheet('il')">İl Seçiniz</button>
+                    <input type="hidden" id="il">
+                    <div class="err-msg">İl seçiniz</div>
+                </div>
+                <div class="fg">
+                    <label>İlçe</label>
+                    <button type="button" class="drop-btn placeholder" id="ilceBtn" onclick="openSheet('ilce')">İlçe Seçiniz</button>
+                    <input type="hidden" id="ilce">
+                </div>
+            </div>
+            <div class="fg" id="fg-adres">
+                <label>Adres <span style="color:#ef4444">*</span></label>
+                <textarea id="adres" rows="2" placeholder="Açık adres..."></textarea>
+                <div class="err-msg">Adres giriniz</div>
+            </div>
+            <div class="fg">
+                <label>Kimlik / Vergi No</label>
+                <input type="text" id="kimlikNo" placeholder="TCKN veya Vergi No">
+            </div>
+            <div class="fg">
+                <label>Müşteri Müsait Zamanı</label>
+                <div class="row3">
+                    <input type="date" id="musaitTarih">
+                    <button type="button" class="drop-btn selected" id="baslangicBtn" onclick="openSheet('baslangic')">09:00</button>
+                    <button type="button" class="drop-btn selected" id="bitisBtn" onclick="openSheet('bitis')">18:00</button>
+                    <input type="hidden" id="musaitBaslangic" value="09:00">
+                    <input type="hidden" id="musaitBitis" value="18:00">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cihaz Bilgisi -->
+<div class="section">
+    <div class="card">
+        <div class="card-head"><div class="card-head-ico ico-red"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/></svg></div><div class="card-head-title">Cihaz Bilgisi</div></div>
+        <div class="card-body">
+            <div class="fg" id="fg-cihazMarka">
+                <label>Cihaz Markası <span style="color:#ef4444">*</span></label>
+                <button type="button" class="drop-btn placeholder" id="markaBtn" onclick="openSheet('marka')">Marka Seçiniz</button>
+                <input type="hidden" id="cihazMarka">
+                <div class="err-msg">Marka seçiniz</div>
+            </div>
+            <div class="fg" id="fg-cihazTuru">
+                <label>Cihaz Türü <span style="color:#ef4444">*</span></label>
+                <button type="button" class="drop-btn placeholder" id="turBtn" onclick="openSheet('tur')">Tür Seçiniz</button>
+                <input type="hidden" id="cihazTuru">
+                <div class="err-msg">Cihaz türü seçiniz</div>
+            </div>
+            <div class="fg" id="fg-cihazModeli">
+                <label>Cihaz Modeli <span style="color:#ef4444">*</span></label>
+                <input type="text" id="cihazModeli" placeholder="Model adı/kodu">
+                <div class="err-msg">Model giriniz</div>
+            </div>
+            <div class="fg">
+                <label>Cihaz Seri No</label>
+                <input type="text" id="cihazSeriNo" placeholder="Seri numarası (opsiyonel)">
+            </div>
+            <div class="fg" id="fg-cihazArizasi">
+                <label>Cihaz Arızası <span style="color:#ef4444">*</span></label>
+                <input type="text" id="cihazArizasi" placeholder="Arıza açıklaması">
+                <div class="err-msg">Arıza açıklaması giriniz</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Not & Garanti -->
+<div class="section">
+    <div class="card">
+        <div class="card-head"><div class="card-head-ico ico-purple"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></div><div class="card-head-title">Ek Bilgiler</div></div>
+        <div class="card-body">
+            <div class="fg">
+                <label>Operatör Notu</label>
+                <input type="text" id="operatorNotu" placeholder="Özel not...">
+            </div>
+            <div class="fg" style="display:flex;align-items:center;gap:12px">
+                <label style="flex:1;margin:0">Garanti Süresi</label>
+                <button type="button" class="drop-btn" id="garantiBtn" onclick="openSheet('garanti')" style="width:auto;min-width:60px">1</button>
+                <input type="hidden" id="garantiSuresi" value="1">
+                <span style="color:rgba(255,255,255,0.5);font-size:13px">Yıl</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom -->
+<div class="bottom-bar">
+    <button class="btn btn-cancel" onclick="window.location.href='ana-sayfa.html'">Vazgeç</button>
+    <button class="btn btn-save" onclick="kaydet()">Kaydet & Devam →</button>
+</div>
+
+<!-- Sheet -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheetBg(event)">
+    <div class="sheet">
+        <div class="sheet-head">
+            <div class="sheet-ico"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>
+            <div class="sheet-title" id="sheetTitle">Seçiniz</div>
+        </div>
+        <div class="sheet-body" id="sheetBody"></div>
+        <div class="sheet-foot"><button class="sheet-close" onclick="closeSheet()">Kapat</button></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+    if(!sessionStorage.getItem('karaca_auth')) window.location.href='index.html';
+
+    const ILLER=['Adana','Adıyaman','Afyonkarahisar','Ağrı','Amasya','Ankara','Antalya','Artvin','Aydın','Balıkesir','Bilecik','Bingöl','Bitlis','Bolu','Burdur','Bursa','Çanakkale','Çankırı','Çorum','Denizli','Diyarbakır','Edirne','Elazığ','Erzincan','Erzurum','Eskişehir','Gaziantep','Giresun','Gümüşhane','Hakkari','Hatay','Isparta','Mersin','İstanbul','İzmir','Kars','Kastamonu','Kayseri','Kırklareli','Kırşehir','Kocaeli','Konya','Kütahya','Malatya','Manisa','Kahramanmaraş','Mardin','Muğla','Muş','Nevşehir','Niğde','Ordu','Rize','Sakarya','Samsun','Siirt','Sinop','Sivas','Tekirdağ','Tokat','Trabzon','Tunceli','Şanlıurfa','Uşak','Van','Yozgat','Zonguldak','Aksaray','Bayburt','Karaman','Kırıkkale','Batman','Şırnak','Bartın','Ardahan','Iğdır','Yalova','Karabük','Kilis','Osmaniye','Düzce'];
+
+    // İl bazlı tam ilçe listesi
+    const ILCELER = {
+        'İzmir': ['Aliağa','Balçova','Bayındır','Bayraklı','Bergama','Beydağ','Bornova','Buca','Çeşme','Çiğli','Dikili','Foça','Gaziemir','Güzelbahçe','Karabağlar','Karaburun','Karşıyaka','Kemalpaşa','Kınık','Kiraz','Konak','Menderes','Menemen','Narlıdere','Ödemiş','Seferihisar','Selçuk','Tire','Torbalı','Urla'],
+        'Manisa': ['Ahmetli','Akhisar','Alaşehir','Demirci','Gölmarmara','Gördes','Kırkağaç','Köprübaşı','Kula','Salihli','Sarıgöl','Saruhanlı','Selendi','Soma','Şehzadeler','Turgutlu','Yunusemre'],
+        'Aydın': ['Bozdoğan','Buharkent','Çine','Didim','Efeler','Germencik','İncirliova','Karacasu','Karpuzlu','Koçarlı','Köşk','Kuşadası','Kuyucak','Nazilli','Söke','Sultanhisar','Yenipazar'],
+        'İstanbul': ['Adalar','Arnavutköy','Ataşehir','Avcılar','Bağcılar','Bahçelievler','Bakırköy','Başakşehir','Bayrampaşa','Beşiktaş','Beykoz','Beylikdüzü','Beyoğlu','Büyükçekmece','Çatalca','Çekmeköy','Esenler','Esenyurt','Eyüpsultan','Fatih','Gaziosmanpaşa','Güngören','Kadıköy','Kağıthane','Kartal','Küçükçekmece','Maltepe','Pendik','Sancaktepe','Sarıyer','Şile','Silivri','Şişli','Sultanbeyli','Sultangazi','Tuzla','Ümraniye','Üsküdar','Zeytinburnu'],
+        'Ankara': ['Akyurt','Altındağ','Ayaş','Bala','Beypazarı','Çamlıdere','Çankaya','Çubuk','Elmadağ','Etimesgut','Evren','Gölbaşı','Güdül','Haymana','Kahramankazan','Kalecik','Keçiören','Kızılcahamam','Mamak','Nallıhan','Polatlı','Pursaklar','Sincan','Şereflikoçhisar','Yenimahalle'],
+        'Bursa': ['Büyükorhan','Gemlik','Gürsu','Harmancık','İnegöl','İznik','Karacabey','Keles','Kestel','Mudanya','Mustafakemalpaşa','Nilüfer','Orhaneli','Orhangazi','Osmangazi','Yenişehir','Yıldırım'],
+        'Antalya': ['Akseki','Aksu','Alanya','Demre','Döşemealtı','Elmalı','Finike','Gazipaşa','Gündoğmuş','İbradı','Kaş','Kemer','Kepez','Konyaaltı','Korkuteli','Kumluca','Manavgat','Muratpaşa','Serik'],
+        'Muğla': ['Bodrum','Dalaman','Datça','Fethiye','Kavaklıdere','Köyceğiz','Marmaris','Menteşe','Milas','Ortaca','Seydikemer','Ula','Yatağan'],
+        'Konya': ['Ahırlı','Akören','Akşehir','Altınekin','Beyşehir','Bozkır','Cihanbeyli','Çeltik','Çumra','Derbent','Derebucak','Doğanhisar','Emirgazi','Ereğli','Güneysınır','Hadim','Halkapınar','Hüyük','Ilgın','Kadınhanı','Karapınar','Karatay','Kulu','Meram','Sarayönü','Selçuklu','Seydişehir','Taşkent','Tuzlukçu','Yalıhüyük','Yunak'],
+        'Balıkesir': ['Altıeylül','Ayvalık','Balya','Bandırma','Bigadiç','Burhaniye','Dursunbey','Edremit','Erdek','Gömeç','Gönen','Havran','İvrindi','Karesi','Kepsut','Manyas','Marmara','Savaştepe','Sındırgı','Susurluk'],
+        'Denizli': ['Acıpayam','Baklan','Bekilli','Beyağaç','Bozkurt','Buldan','Çal','Çameli','Çardak','Çivril','Güney','Honaz','Kale','Merkezefendi','Pamukkale','Sarayköy','Serinhisar','Tavas'],
+        'Kocaeli': ['Başiskele','Çayırova','Darıca','Derince','Dilovası','Gebze','Gölcük','İzmit','Kandıra','Karamürsel','Kartepe','Körfez'],
+        'Sakarya': ['Adapazarı','Akyazı','Arifiye','Erenler','Ferizli','Geyve','Hendek','Karasu','Kaynarca','Kocaali','Pamukova','Sapanca','Serdivan','Söğütlü','Taraklı'],
+        'Mersin': ['Akdeniz','Anamur','Aydıncık','Bozyazı','Çamlıyayla','Erdemli','Gülnar','Mezitli','Mut','Silifke','Tarsus','Toroslar','Yenişehir'],
+        'Hatay': ['Altınözü','Antakya','Arsuz','Belen','Defne','Dörtyol','Erzin','Hassa','İskenderun','Kırıkhan','Kumlu','Payas','Reyhanlı','Samandağ','Yayladağı'],
+        'Gaziantep': ['Araban','İslahiye','Karkamış','Nizip','Nurdağı','Oğuzeli','Şahinbey','Şehitkamil','Yavuzeli'],
+        'Eskişehir': ['Alpu','Beylikova','Çifteler','Günyüzü','Han','İnönü','Mahmudiye','Mihalgazi','Mihallıçcık','Odunpazarı','Sarıcakaya','Seyitgazi','Sivrihisar','Tepebaşı'],
+        'Kayseri': ['Akkışla','Bünyan','Develi','Felahiye','Hacılar','İncesu','Kocasinan','Melikgazi','Özvatan','Pınarbaşı','Sarıoğlan','Sarız','Talas','Tomarza','Yahyalı','Yeşilhisar'],
+    };
+
+    // Beyaz eşya + TV + Klima + Kombi odaklı marka listesi
+    const MARKALAR=[
+        'Arçelik','Beko','Bosch','Siemens','Profilo','Vestel','Altus','Grundig','Regal','Sunny',
+        'LG','Samsung','Electrolux','AEG','Miele','Whirlpool','Indesit','Hotpoint Ariston',
+        'Candy','Hoover','Blomberg','Gorenje','Hisense','Haier','Midea','Zanussi',
+        'Ariston','Vaillant','Viessmann','Buderus','Baymak','Demirdöküm','Ferroli',
+        'Protherm','Immergas','Junkers','Roca','Biasi','De Dietrich',
+        'Daikin','Mitsubishi Electric','Mitsubishi Heavy','Toshiba','Fujitsu','Panasonic',
+        'Airfel','Alarko Carrier','Gree','York','Carrier',
+        'Silverline','Simfer','Kumtel','Cata','Smeg','Neff','Gaggenau',
+        'Sony','Philips','TCL','Sharp',
+        'Tefal','Arzum','Fakir','Sinbo','Korkmaz','De Longhi','Dyson','Karcher','Alaska',
+        'Diğer'
+    ];
+    const TURLER=[
+        'Buzdolabı','Derin Dondurucu','Şaraplık / Minibar',
+        'Çamaşır Makinası','Kurutma Makinası','Bulaşık Makinası',
+        'Fırın','Ocak','Set Üstü Ocak','Ankastre Set','Davlumbaz / Aspiratör','Mikrodalga Fırın',
+        'Klima','Kombi','Isı Pompası','Kazan Dairesi','Termosifon','Şofben',
+        'Televizyon (TV)','Projeksiyon',
+        'Elektrikli Süpürge','Robot Süpürge','Ütü',
+        'Endüstriyel Bulaşık Makinası','Endüstriyel Çamaşır Makinası','Su Arıtma Cihazı',
+        'Diğer'
+    ];
+    const SAATLER=Array.from({length:48},(_,i)=>{const h=Math.floor(i/2).toString().padStart(2,'0');const m=i%2===0?'00':'30';return`${h}:${m}`;});
+    const GARANTILER=['1','2','3'];
+
+    let currentSheet='';
+    const now=new Date();
+    document.getElementById('infoDate').textContent=now.toLocaleDateString('tr-TR');
+    document.getElementById('infoTime').textContent=now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('musaitTarih').value=now.toISOString().split('T')[0];
+
+    // Servis no
+    const nextNo=parseInt(localStorage.getItem('karaca_son_servis_no')||'253000')+1;
+    document.getElementById('servisNoBadge').textContent='#'+nextNo;
+
+    // Prefill from havuz
+    const prefill=sessionStorage.getItem('prefill_musteri');
+    if(prefill){
+        const m=JSON.parse(prefill);
+        document.getElementById('musteriAdi').value=m.ad||'';
+        document.getElementById('telefon1').value=m.telefon1||'';
+        document.getElementById('telefon2').value=m.telefon2||'';
+        document.getElementById('il').value=m.il||'';
+        if(m.il){ const b=document.getElementById('ilBtn'); b.textContent=m.il; b.classList.remove('placeholder'); b.classList.add('selected'); }
+        document.getElementById('ilce').value=m.ilce||'';
+        if(m.ilce){ const b=document.getElementById('ilceBtn'); b.textContent=m.ilce; b.classList.remove('placeholder'); b.classList.add('selected'); }
+        document.getElementById('adres').value=m.adres||'';
+        document.getElementById('kimlikNo').value=m.kimlikNo||'';
+        if(m.musteriTipi) document.getElementById('musteriTipi').value=m.musteriTipi;
+        const banner=document.getElementById('prefillBanner');
+        document.getElementById('prefillName').textContent=m.ad;
+        banner.classList.add('show');
+    }
+
+    function clearPrefill(){
+        sessionStorage.removeItem('prefill_musteri');
+        document.getElementById('musteriAdi').value='';
+        document.getElementById('telefon1').value='';
+        document.getElementById('telefon2').value='';
+        document.getElementById('il').value='';
+        document.getElementById('ilBtn').textContent='İl Seçiniz';
+        document.getElementById('ilBtn').className='drop-btn placeholder';
+        document.getElementById('ilce').value='';
+        document.getElementById('ilceBtn').textContent='İlçe Seçiniz';
+        document.getElementById('ilceBtn').className='drop-btn placeholder';
+        document.getElementById('adres').value='';
+        document.getElementById('kimlikNo').value='';
+        document.getElementById('prefillBanner').classList.remove('show');
+    }
+
+    function openSheet(type){
+        currentSheet=type;
+        const titles={il:'İl Seçiniz',ilce:'İlçe Seçiniz',marka:'Marka Seçiniz',tur:'Cihaz Türü',baslangic:'Başlangıç Saati',bitis:'Bitiş Saati',garanti:'Garanti Süresi'};
+
+        // İlçe listesini seçili ile göre dinamik oluştur
+        const secilenIl = document.getElementById('il').value;
+        const ilceListesi = ILCELER[secilenIl] || [];
+
+        const lists={il:ILLER,ilce:ilceListesi,marka:MARKALAR,tur:TURLER,baslangic:SAATLER,bitis:SAATLER,garanti:GARANTILER};
+        const currVals={il:document.getElementById('il').value,ilce:document.getElementById('ilce').value,marka:document.getElementById('cihazMarka').value,tur:document.getElementById('cihazTuru').value,baslangic:document.getElementById('musaitBaslangic').value,bitis:document.getElementById('musaitBitis').value,garanti:document.getElementById('garantiSuresi').value};
+
+        if(type==='ilce' && ilceListesi.length===0){
+            // İl seçilmemişse uyar
+            if(!secilenIl){ toast('Önce il seçiniz','error'); return; }
+            // Listesi olmayan il için serbest yazım
+            const ilceInput = document.createElement('div');
+            document.getElementById('sheetTitle').textContent='İlçe Giriniz';
+            document.getElementById('sheetBody').innerHTML=`
+                <div style="padding:16px;">
+                    <input type="text" id="ilceManuel" placeholder="İlçe adı yazın..." 
+                        style="width:100%;padding:12px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);border-radius:10px;color:white;font-size:15px;font-family:Inter,sans-serif;">
+                </div>`;
+            document.getElementById('sheetOverlay').classList.add('show');
+            setTimeout(()=>document.getElementById('ilceManuel')?.focus(),100);
+            document.querySelector('.sheet-close').onclick=()=>{
+                const v=document.getElementById('ilceManuel')?.value?.trim();
+                if(v){ document.getElementById('ilce').value=v; const b=document.getElementById('ilceBtn'); b.textContent=v; b.classList.remove('placeholder'); b.classList.add('selected'); }
+                closeSheet();
+                document.querySelector('.sheet-close').onclick=closeSheet;
+            };
+            return;
+        }
+
+        document.getElementById('sheetTitle').textContent=titles[type]||'Seçiniz';
+        const cv=currVals[type];
+        document.getElementById('sheetBody').innerHTML=(lists[type]||[]).map(item=>`<div class="sheet-item ${item===cv?'sel':''}" onclick="selectSheet('${item.replace(/'/g,"\\'")}')">${item}</div>`).join('');
+        document.getElementById('sheetOverlay').classList.add('show');
+        if(cv){ setTimeout(()=>{ const sel=document.querySelector('.sheet-item.sel'); if(sel) sel.scrollIntoView({block:'center'}); },100); }
+    }
+    function closeSheet(){ document.getElementById('sheetOverlay').classList.remove('show'); }
+    function closeSheetBg(e){ if(e.target===document.getElementById('sheetOverlay')) closeSheet(); }
+
+    function selectSheet(v){
+        const map={
+            il:['il','ilBtn'],ilce:['ilce','ilceBtn'],marka:['cihazMarka','markaBtn'],tur:['cihazTuru','turBtn'],
+            baslangic:['musaitBaslangic','baslangicBtn'],bitis:['musaitBitis','bitisBtn'],garanti:['garantiSuresi','garantiBtn']
+        };
+        const [hid,btn]=map[currentSheet]||[];
+        if(hid) document.getElementById(hid).value=v;
+        if(btn){ const b=document.getElementById(btn); b.textContent=v; b.classList.remove('placeholder'); b.classList.add('selected'); }
+        // İl değişince ilçeyi sıfırla
+        if(currentSheet==='il'){
+            document.getElementById('ilce').value='';
+            const ib=document.getElementById('ilceBtn'); ib.textContent='İlçe Seçiniz'; ib.className='drop-btn placeholder';
+        }
+        closeSheet();
+    }
+
+    function validate(){
+        const reqs=[
+            {id:'musteriAdi',fg:'fg-musteriAdi'},
+            {id:'telefon1',fg:'fg-telefon1'},
+            {id:'il',fg:'fg-il'},
+            {id:'adres',fg:'fg-adres'},
+            {id:'cihazMarka',fg:'fg-cihazMarka'},
+            {id:'cihazTuru',fg:'fg-cihazTuru'},
+            {id:'cihazModeli',fg:'fg-cihazModeli'},
+            {id:'cihazArizasi',fg:'fg-cihazArizasi'}
+        ];
+        let ok=true;
+        reqs.forEach(r=>{
+            const el=document.getElementById(r.id);
+            const fg=document.getElementById(r.fg);
+            if(!el?.value?.trim()){ fg?.classList.add('err'); ok=false; }
+            else fg?.classList.remove('err');
+        });
+        if(!ok) showToast('Zorunlu alanları doldurun','error');
+        return ok;
+    }
+
+    function kaydet(){
+        if(!validate()) return;
+        const servisNo=parseInt(localStorage.getItem('karaca_son_servis_no')||'253000')+1;
+        localStorage.setItem('karaca_son_servis_no',servisNo.toString());
+        const kayitTarihi=new Date().toISOString();
+        const garantiYil=parseInt(document.getElementById('garantiSuresi').value);
+        const garantiBitis=new Date(kayitTarihi);
+        garantiBitis.setFullYear(garantiBitis.getFullYear()+garantiYil);
+
+        const yeniServis={
+            id:'servis_'+Date.now(),
+            servisNo,kayitTarihi,
+            servisKaynagi:'0531 565 0635',operator:'Çağrı Merkezi',
+            musteri:{
+                ad:document.getElementById('musteriAdi').value,
+                telefon1:document.getElementById('telefon1').value,
+                telefon2:document.getElementById('telefon2').value,
+                il:document.getElementById('il').value,
+                ilce:document.getElementById('ilce').value,
+                adres:document.getElementById('adres').value,
+                kimlikNo:document.getElementById('kimlikNo').value,
+                musteriTipi:document.getElementById('musteriTipi').value,
+                musaitOlmaZamani:{tarih:document.getElementById('musaitTarih').value,baslangic:document.getElementById('musaitBaslangic').value,bitis:document.getElementById('musaitBitis').value}
+            },
+            cihaz:{marka:document.getElementById('cihazMarka').value,tur:document.getElementById('cihazTuru').value,model:document.getElementById('cihazModeli').value,seriNo:document.getElementById('cihazSeriNo').value,ariza:document.getElementById('cihazArizasi').value,garantiBitis:garantiBitis.toISOString().split('T')[0]},
+            operatorNotu:document.getElementById('operatorNotu').value,
+            garantiSuresi:garantiYil,
+            durum:'Teknisyen Yönlendir',teknisyen:null,
+            islemler:[{id:'i_'+Date.now(),tarih:kayitTarihi,islemiYapan:'Çağrı Merkezi',islemAdi:'Teknisyen Yönlendir',aciklama:'Teknisyen: Henüz atanmadı\nGidiş Tarihi: '+new Date(document.getElementById('musaitTarih').value).toLocaleDateString('tr-TR')}],
+            paraHareketleri:[],arizaTespiti:'',yapilanIslemler:'',kullanilanParca:'',toplamTutar:0,musteriImza:'',teknisyenImza:''
+        };
+
+        // Müşteri havuzuna ekle/güncelle
+        let musteriler=JSON.parse(localStorage.getItem('karaca_musteriler')||'[]');
+        const tel=yeniServis.musteri.telefon1.replace(/[^0-9]/g,'');
+        const idx=musteriler.findIndex(m=>m.telefon1?.replace(/[^0-9]/g,'')=== tel);
+        if(idx<0){
+            musteriler.push({id:'m_'+tel,ad:yeniServis.musteri.ad,telefon1:yeniServis.musteri.telefon1,telefon2:yeniServis.musteri.telefon2,il:yeniServis.musteri.il,ilce:yeniServis.musteri.ilce,adres:yeniServis.musteri.adres,kimlikNo:yeniServis.musteri.kimlikNo,musteriTipi:yeniServis.musteri.musteriTipi,kayitTarihi,servisler:[yeniServis.id]});
+        } else {
+            if(!musteriler[idx].servisler) musteriler[idx].servisler=[];
+            musteriler[idx].servisler.push(yeniServis.id);
+        }
+        localStorage.setItem('karaca_musteriler',JSON.stringify(musteriler));
+
+        const servisler=JSON.parse(localStorage.getItem('karaca_servisler')||'[]');
+        servisler.push(yeniServis);
+        localStorage.setItem('karaca_servisler',JSON.stringify(servisler));
+        sessionStorage.setItem('current_servis',JSON.stringify(yeniServis));
+        sessionStorage.removeItem('prefill_musteri');
+
+        showToast('Servis #'+servisNo+' oluşturuldu ✓');
+        setTimeout(()=>window.location.href='teknisyen-yonlendir.html',900);
+    }
+
+    function showToast(msg,type){
+        const t=document.getElementById('toast');
+        t.textContent=msg; t.style.background=type==='error'?'#dc2626':'#059669';
+        t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
+    }
+</script>
+</body>
+</html>

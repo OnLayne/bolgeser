@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KARACA SERVİS — Giriş</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            font-family:'Inter',system-ui,sans-serif;
+            background:#0f172a;
+            min-height:100vh;
+            display:flex;flex-direction:column;
+            align-items:center;justify-content:center;
+            padding:24px;
+            position:relative;overflow:hidden;
+        }
+        /* Animated background */
+        body::before{
+            content:'';position:absolute;inset:0;
+            background:radial-gradient(ellipse 80% 60% at 50% -20%,rgba(37,99,235,0.35),transparent),
+                        radial-gradient(ellipse 60% 40% at 80% 80%,rgba(220,38,38,0.15),transparent);
+        }
+        .grid-bg{
+            position:absolute;inset:0;
+            background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+                             linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+            background-size:40px 40px;
+        }
+        .wrap{position:relative;z-index:1;width:100%;max-width:360px;}
+
+        /* Logo */
+        .brand{text-align:center;margin-bottom:36px;}
+        .brand-icon{
+            width:72px;height:72px;
+            background:linear-gradient(135deg,#1e40af,#3b82f6);
+            border-radius:20px;margin:0 auto 16px;
+            display:flex;align-items:center;justify-content:center;
+            box-shadow:0 20px 40px rgba(37,99,235,0.4);
+        }
+        .brand-icon svg{width:36px;height:36px;color:white;}
+        .brand h1{color:white;font-size:28px;font-weight:800;letter-spacing:2px;}
+        .brand p{color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px;letter-spacing:0.5px;}
+
+        /* Card */
+        .card{
+            background:rgba(255,255,255,0.05);
+            backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:20px;padding:28px;
+        }
+        .card-title{color:white;font-size:16px;font-weight:700;margin-bottom:20px;text-align:center;}
+
+        /* Input */
+        .input-wrap{position:relative;margin-bottom:14px;}
+        .input-wrap input{
+            width:100%;padding:14px 46px 14px 14px;
+            background:rgba(255,255,255,0.07);
+            border:1.5px solid rgba(255,255,255,0.12);
+            border-radius:12px;font-size:15px;color:white;
+            font-family:'Inter',sans-serif;
+            transition:all 0.2s;
+        }
+        .input-wrap input::placeholder{color:rgba(255,255,255,0.35);}
+        .input-wrap input:focus{outline:none;border-color:#3b82f6;background:rgba(255,255,255,0.1);}
+        .eye-btn{
+            position:absolute;right:14px;top:50%;transform:translateY(-50%);
+            background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;
+        }
+
+        /* Error */
+        .error{
+            background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.3);
+            color:#fca5a5;padding:10px 12px;border-radius:10px;
+            font-size:12px;margin-bottom:14px;display:none;
+        }
+        .error.show{display:block;}
+
+        /* Submit */
+        .submit-btn{
+            width:100%;padding:14px;
+            background:linear-gradient(135deg,#1e40af,#3b82f6);
+            color:white;border:none;border-radius:12px;
+            font-size:15px;font-weight:700;cursor:pointer;
+            transition:all 0.2s;letter-spacing:0.3px;
+            font-family:'Inter',sans-serif;
+        }
+        .submit-btn:hover{opacity:0.9;transform:translateY(-1px);}
+        .submit-btn:active{transform:translateY(0);}
+        .submit-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+        /* Footer */
+        .footer{color:rgba(255,255,255,0.25);font-size:11px;margin-top:24px;text-align:center;letter-spacing:0.5px;}
+    </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="wrap">
+    <div class="brand">
+        <div class="brand-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+        </div>
+        <h1>KARACA</h1>
+        <p>TEKNİK SERVİS YÖNETİM SİSTEMİ</p>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Güvenli Giriş</div>
+        <div class="error" id="err">Hatalı şifre, tekrar deneyin.</div>
+        <div class="input-wrap">
+            <input type="password" id="pwd" placeholder="Şifre" autocomplete="current-password">
+            <button type="button" class="eye-btn" onclick="togglePwd()">
+                <svg id="eyeIco" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+            </button>
+        </div>
+        <button class="submit-btn" id="loginBtn" onclick="doLogin()">Giriş Yap</button>
+    </div>
+    <div class="footer">© 2026 KARACA Servis · v3.0</div>
+</div>
+<script>
+    if(!localStorage.getItem('karaca_servisler')) localStorage.setItem('karaca_servisler','[]');
+    if(!localStorage.getItem('karaca_son_servis_no')) localStorage.setItem('karaca_son_servis_no','253000');
+    if(!localStorage.getItem('karaca_musteriler')) localStorage.setItem('karaca_musteriler','[]');
+
+    function togglePwd(){
+        const i=document.getElementById('pwd');
+        i.type=i.type==='password'?'text':'password';
+    }
+    function doLogin(){
+        const pwd=document.getElementById('pwd').value;
+        const btn=document.getElementById('loginBtn');
+        const err=document.getElementById('err');
+        btn.disabled=true; btn.textContent='Doğrulanıyor...';
+        setTimeout(()=>{
+            if(pwd==='canonlayn'){
+                sessionStorage.setItem('karaca_auth','true');
+                window.location.href='ana-sayfa.html';
+            } else {
+                err.classList.add('show');
+                btn.disabled=false; btn.textContent='Giriş Yap';
+            }
+        },400);
+    }
+    document.getElementById('pwd').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>

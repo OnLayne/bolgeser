@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KARACA SERVİS — Ana Sayfa</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',system-ui,sans-serif;background:#0f172a;min-height:100vh;color:white;}
+
+        /* Top bar */
+        .topbar{
+            background:rgba(255,255,255,0.04);
+            border-bottom:1px solid rgba(255,255,255,0.08);
+            padding:14px 20px;
+            display:flex;justify-content:space-between;align-items:center;
+        }
+        .topbar-brand{display:flex;align-items:center;gap:10px;}
+        .topbar-icon{
+            width:36px;height:36px;background:linear-gradient(135deg,#1e40af,#3b82f6);
+            border-radius:10px;display:flex;align-items:center;justify-content:center;
+        }
+        .topbar-icon svg{width:18px;height:18px;}
+        .topbar-title{font-size:15px;font-weight:800;letter-spacing:1px;}
+        .topbar-sub{font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:0.5px;}
+        .topbar-right{display:flex;align-items:center;gap:10px;}
+        .time-badge{
+            background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
+            padding:5px 10px;border-radius:8px;font-size:12px;font-weight:600;
+        }
+        .logout-btn{
+            background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.25);
+            color:#fca5a5;padding:6px 12px;border-radius:8px;font-size:12px;
+            font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;
+        }
+
+        /* Hero */
+        .hero{
+            background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 50%,#1d4ed8 100%);
+            padding:24px 20px 28px;
+            position:relative;overflow:hidden;
+        }
+        .hero::before{
+            content:'';position:absolute;inset:0;
+            background:repeating-linear-gradient(45deg,transparent,transparent 30px,rgba(255,255,255,0.02) 30px,rgba(255,255,255,0.02) 60px);
+        }
+        .hero-content{position:relative;}
+        .hero h2{font-size:22px;font-weight:800;letter-spacing:0.5px;margin-bottom:4px;}
+        .hero p{font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:18px;}
+        .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+        .stat{
+            background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);
+            border:1px solid rgba(255,255,255,0.15);
+            padding:14px 12px;border-radius:12px;text-align:center;
+        }
+        .stat-val{font-size:26px;font-weight:800;line-height:1;}
+        .stat-lbl{font-size:10px;color:rgba(255,255,255,0.7);margin-top:4px;font-weight:500;}
+
+        /* Section */
+        .section{padding:20px;}
+        .section-title{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+
+        /* Menu cards */
+        .menu-grid{display:flex;flex-direction:column;gap:10px;}
+        .menu-card{
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:14px;padding:16px;
+            text-decoration:none;color:inherit;
+            display:flex;align-items:center;gap:14px;
+            transition:all 0.2s;
+        }
+        .menu-card:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.15);transform:translateX(3px);}
+        .menu-card:active{transform:translateX(0);}
+        .menu-ico{
+            width:46px;height:46px;border-radius:12px;
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;
+        }
+        .menu-ico svg{width:22px;height:22px;color:white;}
+        .ico-servis{background:linear-gradient(135deg,#059669,#10b981);}
+        .ico-havuz{background:linear-gradient(135deg,#0284c7,#0ea5e9);}
+        .ico-teknisyen{background:linear-gradient(135deg,#7c3aed,#8b5cf6);}
+        .ico-yuzdelik{background:linear-gradient(135deg,#d97706,#f59e0b);}
+        .ico-muhasebe{background:linear-gradient(135deg,#dc2626,#ef4444);}
+        .ico-depo{background:linear-gradient(135deg,#ea580c,#f97316);}
+        .ico-ai{background:linear-gradient(135deg,#0f766e,#14b8a6);}
+        .menu-txt{flex:1;}
+        .menu-name{font-size:14px;font-weight:700;margin-bottom:3px;}
+        .menu-desc{font-size:11px;color:rgba(255,255,255,0.45);}
+        .menu-arr{color:rgba(255,255,255,0.25);}
+        .menu-arr svg{width:16px;height:16px;}
+
+        /* Badge */
+        .badge{
+            background:rgba(220,38,38,0.2);border:1px solid rgba(220,38,38,0.3);
+            color:#fca5a5;font-size:10px;font-weight:700;
+            padding:2px 8px;border-radius:20px;
+        }
+
+        .footer{text-align:center;padding:20px;color:rgba(255,255,255,0.2);font-size:11px;}
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <div class="topbar-brand">
+        <div class="topbar-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+        </div>
+        <div>
+            <div class="topbar-title">KARACA</div>
+            <div class="topbar-sub">SERVİS YÖNETİMİ</div>
+        </div>
+    </div>
+    <div class="topbar-right">
+        <div class="time-badge" id="clock">--:--</div>
+        <button class="logout-btn" onclick="logout()">Çıkış</button>
+    </div>
+</div>
+
+<div class="hero">
+    <div class="hero-content">
+        <h2>Hoş Geldiniz 👋</h2>
+        <p>BÖLGE MERKEZ SERVİSİ — Teknik Yönetim Paneli</p>
+        <div class="stats-row">
+            <div class="stat"><div class="stat-val" id="stAktif">0</div><div class="stat-lbl">Aktif Servis</div></div>
+            <div class="stat"><div class="stat-val" id="stMusteri">0</div><div class="stat-lbl">Müşteri Havuzu</div></div>
+            <div class="stat"><div class="stat-val" id="stBugün">0</div><div class="stat-lbl">Bugün Kayıt</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title">Ana Menü</div>
+    <div class="menu-grid">
+
+        <a href="yeni-servis.html" class="menu-card">
+            <div class="menu-ico ico-servis">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <div class="menu-txt">
+                <div class="menu-name">Yeni Servis Kaydı</div>
+                <div class="menu-desc">Müşteri ve cihaz bilgisi gir, servis oluştur</div>
+            </div>
+            <div class="menu-arr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+        </a>
+
+        <a href="musteri-havuzu.html" class="menu-card">
+            <div class="menu-ico ico-havuz">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div class="menu-txt">
+                <div class="menu-name">Müşteri Havuzu</div>
+                <div class="menu-desc">Kayıtlı müşterileri görüntüle ve yönet</div>
+            </div>
+            <div class="menu-arr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+        </a>
+
+        <a href="teknisyen-yonlendir.html" class="menu-card">
+            <div class="menu-ico ico-teknisyen">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <div class="menu-txt">
+                <div class="menu-name">Servis Listesi</div>
+                <div class="menu-desc">Tüm servis kayıtları ve teknisyen yönetimi</div>
+            </div>
+            <div id="bekleyenBadge" class="badge" style="display:none">0</div>
+            <div class="menu-arr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+        </a>
+
+        <a href="karaca-yuzdelik.html" class="menu-card">
+            <div class="menu-ico ico-yuzdelik">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M17 17h.01M7 17L17 7M7 7a1 1 0 100 2 1 1 0 000-2zm10 10a1 1 0 100 2 1 1 0 000-2z"/></svg>
+            </div>
+            <div class="menu-txt">
+                <div class="menu-name">Yüzdelik Hesap</div>
+                <div class="menu-desc">Komisyon ve gelir hesaplama tablosu</div>
+            </div>
+            <div class="menu-arr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+        </a>
+
+        <a href="karaca-muhasebe.html" class="menu-card">
+            <div class="menu-ico ico-muhasebe">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <div class="menu-txt">
+                <div class="menu-name">Muhasebe</div>
+                <div class="menu-desc">Gelir/gider özeti ve finansal raporlar</div>
+            </div>
+            <div class="menu-arr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+        </a>
+
+        <a href="karaca-depo.html" class="menu-card">
+            <div class="menu-ico ico-depo">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </div>
+            <div class="menu-txt">
+                <div class="menu-name">Depo</div>
+                <div class="menu-desc">Stok ve parça yönetimi</div>
+            </div>
+            <div class="menu-arr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+        </a>
+
+        <a href="karacacheat.html" class="menu-card">
+            <div class="menu-ico ico-ai">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            </div>
+            <div class="menu-txt">
+                <div class="menu-name">Karaca AI</div>
+                <div class="menu-desc">Akıllı arıza tespit ve çözüm asistanı</div>
+            </div>
+            <div class="menu-arr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+        </a>
+
+    </div>
+</div>
+<div class="footer">© 2026 KARACA Teknik Servis Yönetim Sistemi v3.0</div>
+
+<script>
+    if(!sessionStorage.getItem('karaca_auth')) window.location.href='index.html';
+    function logout(){ sessionStorage.clear(); window.location.href='index.html'; }
+    function tick(){ document.getElementById('clock').textContent=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); }
+    tick(); setInterval(tick,30000);
+
+    function loadStats(){
+        const servisler=JSON.parse(localStorage.getItem('karaca_servisler')||'[]');
+        const musteriler=JSON.parse(localStorage.getItem('karaca_musteriler')||'[]');
+        const bugun=new Date().toDateString();
+        const bugünKayit=servisler.filter(s=>new Date(s.kayitTarihi).toDateString()===bugun).length;
+        const aktif=servisler.filter(s=>!['Tamamlandı','İptal Edildi','Fiyatta Anlaşılamadı'].includes(s.durum)).length;
+        const bekleyen=servisler.filter(s=>s.durum==='Teknisyen Yönlendir').length;
+        document.getElementById('stAktif').textContent=aktif;
+        document.getElementById('stMusteri').textContent=musteriler.length||servisler.length;
+        document.getElementById('stBugün').textContent=bugünKayit;
+        if(bekleyen>0){ const b=document.getElementById('bekleyenBadge'); b.textContent=bekleyen; b.style.display='block'; }
+    }
+    loadStats();
+</script>
+</body>
+</html>

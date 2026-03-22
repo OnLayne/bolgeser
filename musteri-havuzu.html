@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KARACA — Müşteri Havuzu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',system-ui,sans-serif;background:#0f172a;min-height:100vh;color:white;padding-bottom:80px;}
+
+        .topbar{background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+        .back-btn{background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-family:'Inter',sans-serif;}
+        .back-btn svg{width:18px;height:18px;}
+        .page-title{font-size:15px;font-weight:800;letter-spacing:0.5px;}
+        .header-action{background:rgba(37,99,235,0.2);border:1px solid rgba(37,99,235,0.3);color:#93c5fd;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+
+        /* Search */
+        .search-bar{padding:14px 16px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06);}
+        .search-wrap{position:relative;}
+        .search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.35);}
+        .search-ico svg{width:16px;height:16px;}
+        #searchInput{
+            width:100%;padding:10px 12px 10px 36px;
+            background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);
+            border-radius:10px;color:white;font-size:13px;font-family:'Inter',sans-serif;
+        }
+        #searchInput::placeholder{color:rgba(255,255,255,0.35);}
+        #searchInput:focus{outline:none;border-color:#3b82f6;}
+
+        /* Filter tabs */
+        .filter-row{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;}
+        .filter-row::-webkit-scrollbar{display:none;}
+        .ftab{
+            flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;
+            background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
+            color:rgba(255,255,255,0.6);cursor:pointer;font-family:'Inter',sans-serif;
+        }
+        .ftab.active{background:rgba(37,99,235,0.25);border-color:rgba(37,99,235,0.4);color:#93c5fd;}
+
+        /* Stats mini */
+        .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 16px 14px;}
+        .mini-stat{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:10px;text-align:center;}
+        .mini-stat-val{font-size:20px;font-weight:800;}
+        .mini-stat-lbl{font-size:9px;color:rgba(255,255,255,0.45);margin-top:2px;font-weight:500;}
+
+        /* List */
+        .list{padding:0 16px;}
+        .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+        .list-count{font-size:11px;color:rgba(255,255,255,0.4);font-weight:500;}
+
+        .musteri-card{
+            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+            border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;
+            transition:all 0.2s;
+        }
+        .musteri-card:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);}
+        .mc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+        .mc-name{font-size:14px;font-weight:700;}
+        .mc-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;}
+        .badge-bireysel{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;}
+        .badge-kurumsal{background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);color:#c4b5fd;}
+        .mc-info{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+        .mc-info-item{font-size:11px;color:rgba(255,255,255,0.5);}
+        .mc-info-item span{color:rgba(255,255,255,0.85);font-weight:500;}
+        .mc-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);}
+        .mc-servis-count{font-size:11px;color:rgba(255,255,255,0.4);}
+        .mc-servis-count strong{color:#60a5fa;}
+        .mc-actions{display:flex;gap:6px;}
+        .mc-btn{
+            padding:5px 10px;border-radius:6px;font-size:10px;font-weight:600;border:none;cursor:pointer;
+            font-family:'Inter',sans-serif;
+        }
+        .mc-btn-blue{background:rgba(37,99,235,0.2);color:#93c5fd;border:1px solid rgba(37,99,235,0.25);}
+        .mc-btn-green{background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);}
+        .mc-btn-red{background:rgba(220,38,38,0.15);color:#fca5a5;border:1px solid rgba(220,38,38,0.2);}
+
+        /* Empty */
+        .empty{text-align:center;padding:48px 20px;color:rgba(255,255,255,0.3);}
+        .empty-ico{font-size:40px;margin-bottom:12px;}
+        .empty-txt{font-size:13px;}
+
+        /* Drawer */
+        .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:100;align-items:flex-end;}
+        .drawer-overlay.show{display:flex;}
+        .drawer{background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:20px 20px 0 0;width:100%;max-height:92vh;display:flex;flex-direction:column;animation:slideUp 0.25s ease;}
+        @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+        .drawer-handle{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:10px auto 0;}
+        .drawer-head{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;}
+        .drawer-title{font-size:15px;font-weight:800;}
+        .drawer-close{background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;}
+        .drawer-close svg{width:20px;height:20px;}
+        .drawer-body{flex:1;overflow-y:auto;padding:16px 20px;}
+
+        /* Detail sections */
+        .detail-section{margin-bottom:16px;}
+        .detail-section-title{font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+        .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+        .detail-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:8px 10px;}
+        .detail-item.full{grid-column:1/-1;}
+        .detail-lbl{font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:2px;font-weight:500;}
+        .detail-val{font-size:12px;font-weight:600;}
+
+        /* Servis geçmişi */
+        .servis-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;}
+        .servis-item:hover{background:rgba(255,255,255,0.07);}
+        .si-top{display:flex;justify-content:space-between;margin-bottom:4px;}
+        .si-no{font-size:12px;font-weight:700;color:#60a5fa;}
+        .si-date{font-size:10px;color:rgba(255,255,255,0.4);}
+        .si-cihaz{font-size:11px;color:rgba(255,255,255,0.7);}
+        .si-durum{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-top:4px;display:inline-block;}
+        .si-durum.green{background:rgba(16,185,129,0.15);color:#6ee7b7;}
+        .si-durum.blue{background:rgba(37,99,235,0.15);color:#93c5fd;}
+        .si-durum.red{background:rgba(220,38,38,0.15);color:#fca5a5;}
+
+        .drawer-footer{padding:12px 20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;gap:8px;}
+        .drawer-btn{flex:1;padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+        .dbtn-green{background:linear-gradient(135deg,#059669,#10b981);color:white;}
+        .dbtn-blue{background:rgba(37,99,235,0.2);border:1px solid rgba(37,99,235,0.3);color:#93c5fd;}
+
+        /* Toast */
+        .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);background:#059669;color:white;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all 0.3s;z-index:300;white-space:nowrap;}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <button class="back-btn" onclick="window.location.href='ana-sayfa.html'">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Ana Sayfa
+    </button>
+    <div class="page-title">Müşteri Havuzu</div>
+    <button class="header-action" onclick="window.location.href='yeni-servis.html'">+ Yeni</button>
+</div>
+
+<div class="search-bar">
+    <div class="search-wrap">
+        <div class="search-ico"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
+        <input type="text" id="searchInput" placeholder="Ad, telefon veya adres ara..." oninput="render()">
+    </div>
+</div>
+
+<div class="filter-row">
+    <button class="ftab active" onclick="setFilter('tumu',this)">Tümü</button>
+    <button class="ftab" onclick="setFilter('bireysel',this)">Bireysel</button>
+    <button class="ftab" onclick="setFilter('kurumsal',this)">Kurumsal</button>
+    <button class="ftab" onclick="setFilter('cokServis',this)">Çok Servis</button>
+</div>
+
+<div class="mini-stats">
+    <div class="mini-stat"><div class="mini-stat-val" id="msTotal">0</div><div class="mini-stat-lbl">Toplam</div></div>
+    <div class="mini-stat"><div class="mini-stat-val" id="msBireysel">0</div><div class="mini-stat-lbl">Bireysel</div></div>
+    <div class="mini-stat"><div class="mini-stat-val" id="msKurumsal">0</div><div class="mini-stat-lbl">Kurumsal</div></div>
+</div>
+
+<div class="list">
+    <div class="list-header">
+        <div class="list-count" id="listCount">Yükleniyor...</div>
+    </div>
+    <div id="listContainer"></div>
+</div>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer(event)">
+    <div class="drawer">
+        <div class="drawer-handle"></div>
+        <div class="drawer-head">
+            <div class="drawer-title" id="drawerTitle">Müşteri Detayı</div>
+            <button class="drawer-close" onclick="closeDrawer()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <div class="drawer-body" id="drawerBody"></div>
+        <div class="drawer-footer">
+            <button class="drawer-btn dbtn-green" id="drawerServisBtn" onclick="newServisForMusteri()">+ Yeni Servis</button>
+            <button class="drawer-btn dbtn-blue" onclick="closeDrawer()">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    if(!sessionStorage.getItem('karaca_auth')) window.location.href='index.html';
+    let currentFilter='tumu', selectedMusteri=null;
+
+    // Müşteri havuzunu servislerden otomatik doldur (geriye dönük uyumluluk)
+    function buildMusteriHavuzu(){
+        const servisler=JSON.parse(localStorage.getItem('karaca_servisler')||'[]');
+        let musteriler=JSON.parse(localStorage.getItem('karaca_musteriler')||'[]');
+        servisler.forEach(s=>{
+            if(!s.musteri) return;
+            const tel=s.musteri.telefon1?.replace(/[^0-9]/g,'');
+            if(!tel) return;
+            const idx=musteriler.findIndex(m=>m.telefon1?.replace(/[^0-9]/g,'')=== tel);
+            if(idx<0){
+                musteriler.push({
+                    id:'m_'+tel,
+                    ad:s.musteri.ad,
+                    telefon1:s.musteri.telefon1,
+                    telefon2:s.musteri.telefon2||'',
+                    il:s.musteri.il||'',
+                    ilce:s.musteri.ilce||'',
+                    adres:s.musteri.adres||'',
+                    kimlikNo:s.musteri.kimlikNo||'',
+                    musteriTipi:s.musteri.musteriTipi||'Bireysel',
+                    kayitTarihi:s.kayitTarihi,
+                    servisler:[s.id||s.servisNo]
+                });
+            } else {
+                if(!musteriler[idx].servisler) musteriler[idx].servisler=[];
+                const sid=s.id||String(s.servisNo);
+                if(!musteriler[idx].servisler.includes(sid)) musteriler[idx].servisler.push(sid);
+            }
+        });
+        localStorage.setItem('karaca_musteriler',JSON.stringify(musteriler));
+        return musteriler;
+    }
+
+    function getMusteriler(){
+        return buildMusteriHavuzu();
+    }
+
+    function getServisler(){ return JSON.parse(localStorage.getItem('karaca_servisler')||'[]'); }
+
+    function setFilter(f, el){
+        currentFilter=f;
+        document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+        el.classList.add('active');
+        render();
+    }
+
+    function render(){
+        const q=document.getElementById('searchInput').value.toLowerCase();
+        const servisler=getServisler();
+        let musteriler=getMusteriler();
+
+        // Stats
+        document.getElementById('msTotal').textContent=musteriler.length;
+        document.getElementById('msBireysel').textContent=musteriler.filter(m=>m.musteriTipi==='Bireysel').length;
+        document.getElementById('msKurumsal').textContent=musteriler.filter(m=>m.musteriTipi==='Kurumsal').length;
+
+        // Filter
+        let filtered=musteriler;
+        if(currentFilter==='bireysel') filtered=filtered.filter(m=>m.musteriTipi==='Bireysel');
+        if(currentFilter==='kurumsal') filtered=filtered.filter(m=>m.musteriTipi==='Kurumsal');
+        if(currentFilter==='cokServis') filtered=filtered.filter(m=>(m.servisler||[]).length>1);
+
+        // Search
+        if(q) filtered=filtered.filter(m=>(m.ad||'').toLowerCase().includes(q)||(m.telefon1||'').includes(q)||(m.adres||'').toLowerCase().includes(q)||(m.ilce||'').toLowerCase().includes(q));
+
+        // Sort by date desc
+        filtered.sort((a,b)=>new Date(b.kayitTarihi||0)-new Date(a.kayitTarihi||0));
+
+        document.getElementById('listCount').textContent=filtered.length+' müşteri bulundu';
+
+        const cont=document.getElementById('listContainer');
+        if(filtered.length===0){
+            cont.innerHTML='<div class="empty"><div class="empty-ico">👤</div><div class="empty-txt">Müşteri bulunamadı</div></div>';
+            return;
+        }
+        cont.innerHTML=filtered.map(m=>{
+            const sc=(m.servisler||[]).length;
+            const son=servisler.filter(s=>{const tel=s.musteri?.telefon1?.replace(/[^0-9]/g,''); return tel===m.telefon1?.replace(/[^0-9]/g,'');}).slice(-1)[0];
+            return `<div class="musteri-card" onclick="openDrawer('${m.id}')">
+                <div class="mc-top">
+                    <div class="mc-name">${m.ad}</div>
+                    <div class="mc-badge ${m.musteriTipi==='Kurumsal'?'badge-kurumsal':'badge-bireysel'}">${m.musteriTipi}</div>
+                </div>
+                <div class="mc-info">
+                    <div class="mc-info-item">📞 <span>${m.telefon1||'-'}</span></div>
+                    <div class="mc-info-item">📍 <span>${m.ilce||m.il||'-'}</span></div>
+                </div>
+                <div class="mc-bottom">
+                    <div class="mc-servis-count">Toplam servis: <strong>${sc}</strong>${son?' · Son: '+new Date(son.kayitTarihi).toLocaleDateString('tr-TR'):''}</div>
+                    <div class="mc-actions">
+                        <button class="mc-btn mc-btn-blue" onclick="event.stopPropagation();openDrawer('${m.id}')">Detay</button>
+                        <button class="mc-btn mc-btn-green" onclick="event.stopPropagation();newServisFromCard('${m.id}')">+ Servis</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function openDrawer(mid){
+        const musteriler=getMusteriler();
+        const servisler=getServisler();
+        const m=musteriler.find(x=>x.id===mid);
+        if(!m) return;
+        selectedMusteri=m;
+        document.getElementById('drawerTitle').textContent=m.ad;
+        const musteriServisleri=servisler.filter(s=>{
+            const tel=s.musteri?.telefon1?.replace(/[^0-9]/g,'');
+            return tel===m.telefon1?.replace(/[^0-9]/g,'');
+        }).reverse();
+
+        document.getElementById('drawerBody').innerHTML=`
+            <div class="detail-section">
+                <div class="detail-section-title">Kişisel Bilgiler</div>
+                <div class="detail-grid">
+                    <div class="detail-item"><div class="detail-lbl">Ad Soyad</div><div class="detail-val">${m.ad}</div></div>
+                    <div class="detail-item"><div class="detail-lbl">Müşteri Tipi</div><div class="detail-val">${m.musteriTipi||'Bireysel'}</div></div>
+                    <div class="detail-item"><div class="detail-lbl">Telefon 1</div><div class="detail-val">${m.telefon1||'-'}</div></div>
+                    <div class="detail-item"><div class="detail-lbl">Telefon 2</div><div class="detail-val">${m.telefon2||'-'}</div></div>
+                    <div class="detail-item"><div class="detail-lbl">İl</div><div class="detail-val">${m.il||'-'}</div></div>
+                    <div class="detail-item"><div class="detail-lbl">İlçe</div><div class="detail-val">${m.ilce||'-'}</div></div>
+                    <div class="detail-item full"><div class="detail-lbl">Adres</div><div class="detail-val">${m.adres||'-'}</div></div>
+                    ${m.kimlikNo?`<div class="detail-item"><div class="detail-lbl">Kimlik No</div><div class="detail-val">${m.kimlikNo}</div></div>`:''}
+                </div>
+            </div>
+            <div class="detail-section">
+                <div class="detail-section-title">Servis Geçmişi (${musteriServisleri.length})</div>
+                ${musteriServisleri.length===0?'<div style="color:rgba(255,255,255,0.3);font-size:12px;padding:10px 0">Servis kaydı yok</div>':
+                musteriServisleri.map(s=>{
+                    const renk=s.durum?.includes('Yapıldı')||s.durum?.includes('tamamland')?'green':s.durum?.includes('İptal')||s.durum?.includes('Anlaşıla')?'red':'blue';
+                    return `<div class="servis-item" onclick="goToServis('${s.id||s.servisNo}')">
+                        <div class="si-top"><span class="si-no">#${s.servisNo}</span><span class="si-date">${new Date(s.kayitTarihi).toLocaleDateString('tr-TR')}</span></div>
+                        <div class="si-cihaz">${s.cihaz?.marka||''} ${s.cihaz?.tur||''} · ${s.cihaz?.ariza||'-'}</div>
+                        <span class="si-durum ${renk}">${s.durum||'-'}</span>
+                    </div>`;
+                }).join('')}
+            </div>`;
+        document.getElementById('drawerOverlay').classList.add('show');
+    }
+
+    function closeDrawer(e){
+        if(e && e.target!==document.getElementById('drawerOverlay') && e.type==='click') return;
+        document.getElementById('drawerOverlay').classList.remove('show');
+    }
+
+    function goToServis(id){
+        const servisler=getServisler();
+        const s=servisler.find(x=>(x.id===id||String(x.servisNo)===String(id)));
+        if(!s) return;
+        sessionStorage.setItem('current_servis',JSON.stringify(s));
+        window.location.href='servis-detay.html';
+    }
+
+    function newServisForMusteri(){
+        if(!selectedMusteri) return;
+        sessionStorage.setItem('prefill_musteri',JSON.stringify(selectedMusteri));
+        window.location.href='yeni-servis.html';
+    }
+    function newServisFromCard(mid){
+        const musteriler=getMusteriler();
+        const m=musteriler.find(x=>x.id===mid);
+        if(m){ sessionStorage.setItem('prefill_musteri',JSON.stringify(m)); }
+        window.location.href='yeni-servis.html';
+    }
+
+    function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+    render();
+</script>
+</body>
+</html>
